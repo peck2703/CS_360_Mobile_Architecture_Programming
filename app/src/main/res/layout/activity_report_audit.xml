@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:fillViewport="true">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <!-- App Bar -->
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="0dp"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/primary"
+            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <!-- Welcome Message in App Bar -->
+            <TextView
+                android:id="@+id/toolbar_welcome"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="@string/dashboard_toolbar_welcome"
+                android:textColor="?attr/colorOnPrimary"
+                android:textSize="@dimen/text_size_subtitle"
+                android:textStyle="bold" />
+        </androidx.appcompat.widget.Toolbar>
+
+        <!-- Corrected LinearLayout Wrapper -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/screen_padding"
+            app:layout_constraintTop_toBottomOf="@id/toolbar"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <!-- Section Header -->
+            <TextView
+                android:id="@+id/report_header"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/label_report_title"
+                android:textSize="@dimen/text_size_title"
+                android:textStyle="bold"
+                android:textColor="#212121"
+                android:layout_marginTop="@dimen/element_spacing_normal" />
+
+            <!-- Label - Item Spinner -->
+            <TextView
+                android:id="@+id/spinner_item_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/label_select_item_prompt"
+                android:textSize="@dimen/text_size_body"
+                android:textColor="#757575"
+                android:textStyle="bold"
+                android:layout_marginTop="@dimen/element_spacing_large" />
+
+            <!-- Item Selector Drop-Down -->
+            <Spinner
+                android:id="@+id/inventory_items"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="@dimen/touch_target_min_height"
+                android:background="@drawable/bg_card_item"
+                android:spinnerMode="dropdown"
+                android:layout_marginTop="@dimen/element_spacing_normal" />
+
+            <!-- Label - Error Type Selector -->
+            <TextView
+                android:id="@+id/spinner_error"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/label_select_error"
+                android:textSize="@dimen/text_size_body"
+                android:textStyle="bold"
+                android:textColor="#757575"
+                android:layout_marginTop="@dimen/element_spacing_normal" />
+
+            <!-- Error Type Drop-Down -->
+            <Spinner
+                android:id="@+id/discrepancy_types"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="@dimen/touch_target_min_height"
+                android:background="@drawable/bg_card_item"
+                android:spinnerMode="dropdown"
+                android:entries="@array/discrepancy_types"
+                android:layout_marginTop="4dp" />
+
+            <!-- Number Field -->
+            <EditText
+                android:id="@+id/report_count"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="@dimen/touch_target_min_height"
+                android:hint="@string/hint_discrepancy_count"
+                android:inputType="number"
+                android:layout_marginTop="@dimen/element_spacing_normal" />
+
+            <!-- Short Description -->
+            <EditText
+                android:id="@+id/report_short_desc"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="160dp"
+                android:hint="@string/hint_discrepancy_msg"
+                android:inputType="textMultiLine"
+                android:gravity="top|start"
+                android:scrollbars="vertical"
+                android:layout_marginTop="@dimen/element_spacing_normal" />
+
+            <!-- Button to submit audit report -->
+            <android.widget.Button
+                android:id="@+id/btn_report_submit"
+                style="@style/Widget.AppCompat.Button.Colored"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/btn_report_submit"
+                android:layout_marginTop="@dimen/element_spacing_large" />
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Set dimensions for all screens and activities for uniformity -->
+
+    <!-- Screen Spacing -->
+    <dimen name="screen_padding">24dp</dimen>
+    <dimen name="element_spacing_large">32dp</dimen>
+    <dimen name="element_spacing_normal">16dp</dimen>
+
+    <!-- Typography -->
+    <dimen name="text_size_title">44sp</dimen>
+    <dimen name="text_size_subtitle">28sp</dimen>
+    <dimen name="text_size_grid_buttons">24sp</dimen>
+    <dimen name="text_size_body">16sp</dimen>
+
+    <!-- Card Text Sizes -->
+    <dimen name="card_name_label">16sp</dimen>
+    <dimen name="card_body">12sp</dimen>
+    <dimen name="card_badge">14sp</dimen>
+
+    <!-- UI Elements -->
+    <dimen name="touch_target_min_height">48dp</dimen>
+    <dimen name="touch_target_max_width">300dp</dimen>
+
+
+</resources>

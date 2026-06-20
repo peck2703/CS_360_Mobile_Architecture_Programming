@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- App Bar -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="0dp"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/primary"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- Welcome Message in App Bar -->
+        <TextView
+            android:id="@+id/toolbar_welcome"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/dashboard_toolbar_welcome"
+            android:textColor="?attr/colorOnPrimary"
+            android:textSize="@dimen/text_size_subtitle"
+            android:textStyle="bold"
+            />
+
+    </androidx.appcompat.widget.Toolbar>
+
+    <!-- Section Header -->
+    <TextView
+        android:id="@+id/tv_grid_header"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/grid_header"
+        android:textSize="@dimen/text_size_title"
+        android:textStyle="bold"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_margin="@dimen/screen_padding"
+        />
+
+    <!-- Grid Layout for Inventory -->
+    <GridView
+        android:id="@+id/gv_inventory_items"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:numColumns="auto_fit"
+        android:columnWidth="160dp"
+        android:stretchMode="columnWidth"
+
+        android:horizontalSpacing="@dimen/element_spacing_normal"
+        android:verticalSpacing="@dimen/element_spacing_normal"
+        android:paddingHorizontal="@dimen/screen_padding"
+        android:paddingBottom="@dimen/screen_padding"
+        android:clipToPadding="false"
+
+        app:layout_constraintTop_toBottomOf="@id/tv_grid_header"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        />
+
+    <android.widget.ImageButton
+        android:id="@+id/fab_add_order"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:minHeight="@dimen/touch_target_min_height"
+        android:minWidth="@dimen/touch_target_min_height"
+        android:background="@drawable/bg_fab"
+        android:src="@drawable/ic_add_order"
+        style="@style/Widget.AppCompat.Button.Borderless"
+        android:contentDescription="@string/btn_nav_order"
+
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_margin="24dp"
+        />
+
+
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

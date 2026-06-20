@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity"
+    android:padding="@dimen/screen_padding">
+
+    <!-- App / Login Title -->
+    <TextView
+        android:id="@+id/app_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/app_name"
+        android:textSize="@dimen/text_size_title"
+        android:textStyle="bold"
+        android:textColor="?attr/colorOnBackground"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="@dimen/element_spacing_large"
+        />
+
+    <!-- Subtitle beneath Title -->
+    <TextView
+        android:id="@+id/app_login_title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/login_title"
+        android:textSize="@dimen/text_size_subtitle"
+        android:textStyle="bold"
+        android:textColor="?attr/colorOnBackground"
+        app:layout_constraintTop_toBottomOf="@id/app_name"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="@dimen/element_spacing_large"
+        />
+
+    <!-- Username Edit Text -->
+    <EditText
+        android:id="@+id/app_login_user"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:minHeight="@dimen/touch_target_min_height"
+        android:text="@string/hint_username"
+        android:inputType="textNoSuggestions"
+        android:textSize="@dimen/text_size_body"
+        android:textStyle="italic"
+        app:layout_constraintTop_toBottomOf="@id/app_login_title"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="@dimen/element_spacing_normal"
+        />
+
+    <!-- Password Edit Text -->
+    <EditText
+        android:id="@+id/app_login_pass"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:minHeight="@dimen/touch_target_min_height"
+        android:text="@string/hint_password"
+        android:inputType="textPassword"
+        android:textSize="@dimen/text_size_body"
+        android:textStyle="italic"
+        app:layout_constraintTop_toBottomOf="@id/app_login_user"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="@dimen/element_spacing_normal"
+        />
+
+    <!-- Login Button -->
+    <android.widget.Button
+        android:id="@+id/btn_primary_login"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:minHeight="@dimen/touch_target_min_height"
+        android:maxWidth="@dimen/touch_target_max_width"
+        android:text="@string/btn_login"
+        app:layout_constraintTop_toBottomOf="@id/app_login_pass"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/btn_create_login"
+        android:layout_marginTop="@dimen/element_spacing_normal"
+        android:layout_marginEnd="@dimen/element_spacing_normal"
+        />
+
+    <!-- Create Account Button -->
+    <android.widget.Button
+        android:id="@+id/btn_create_login"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:minHeight="@dimen/touch_target_min_height"
+        android:maxWidth="@dimen/touch_target_max_width"
+        android:text="@string/btn_create_account"
+        app:layout_constraintTop_toBottomOf="@id/app_login_pass"
+        app:layout_constraintStart_toEndOf="@id/btn_primary_login"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="@dimen/element_spacing_normal"
+        android:layout_marginEnd="@dimen/element_spacing_normal"
+        />
+
+    <!-- Forgot Password Link -->
+    <TextView
+        android:id="@+id/app_forgot_pass_link"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/txt_forgot_password"
+        android:textSize="@dimen/text_size_body"
+        android:textStyle="bold"
+        android:textColor="@color/accent"
+        app:layout_constraintTop_toBottomOf="@id/btn_primary_login"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="@dimen/element_spacing_large"
+        />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

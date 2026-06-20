@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- Colors for StockPulse -->
+
+    <!-- Primary = Top App Bar, Bottom Navigation -->
+    <color name="primary">#020617</color>
+    <color name="primary_dark">#0F172A</color>
+
+    <!-- Accent = Floating Action Button or Critical Buttons -->
+    <color name="accent">#38BDF8</color>
+    <color name="grid_buttons">#DCE4EC</color>
+
+    <!-- Background -->
+    <color name="background">#020617</color>
+
+    <!-- Use on inventory items against background -->
+    <color name="surface_items">#1E293B</color>
+
+    <!-- Typography -->
+    <color name="text_primary">#F8FAFC</color>
+    <color name="text_secondary">#94A3B8</color>
+    <color name="text_muted">#334155</color>
+
+    <!-- System Status -->
+    <color name="success">#34D399</color>
+    <color name="warning">#FBBF24</color>
+    <color name="error">#F87171</color>
+</resources>

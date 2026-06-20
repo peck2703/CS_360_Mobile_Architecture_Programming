@@ -1,0 +1,104 @@
+<resources>
+    <string name="app_name">StockPulse</string>
+
+    <!--    Resources for Login Screen    -->
+    <string name="login_title">Login</string>
+    <string name="login_subtitle">Please sign in to continue</string>
+    <string name="hint_username">Email Address:</string>
+    <string name="hint_password">Password:</string>
+    <string name="btn_login">Login</string>
+    <string name="btn_create_account">Create Account</string>
+    <string name="txt_forgot_password">Forgot/Lost Password?</string>
+
+    <!-- Resources for Create Account that are separate -->
+    <string name="txt_create_account">Create Your Account</string>
+    <string name="txt_create_first_name">First Name: </string>
+    <string name="txt_create_last_name">Last Name: </string>
+    <string name="txt_email_address">Email Address: </string>
+    <string name="txt_create_password">Enter Password: </string>
+    <string name="txt_create_password_reenter">Re-enter Password: </string>
+
+    <!-- Forgot Password Dialog Box -->
+    <string name="dialog_title">Forgot Your Password?</string>
+    <string name="dialog_instructions">Enter the email address or username associated with your account. You will receive an email with further instructions to recover your account.</string>
+    <string name="dialog_email_username">Email / Username: /</string>
+
+    <!-- Dashboard String resources -->
+    <string name="dashboard_header_title">Dashboard</string>
+    <string name="dashboard_header_subtitle">Select a Task</string>
+    <string name="dashboard_view_inventory">"View\nInventory"</string>
+    <string name="dashboard_add_remove">"Add / Remove\nInventory"</string>
+    <string name="dashboard_order">"Order\nInventory"</string>
+    <string name="dashboard_report">"Report\nDiscrepancy"</string>
+    <string name="dashboard_toolbar_welcome">Welcome %1$s</string>
+    <string name="dashboard_warning">⚠️ WARNING: Low Stock Items Detected!</string>
+
+    <!-- Inventory Label Strings -->
+    <string name="label_item_number_format">Item #: %1$s</string>
+    <string name="label_item_count_format">Qty: %1$s</string>
+    <string name="btn_plus">+</string>
+    <string name="btn_minus">-</string>
+
+    <!-- Master Card Placeholders -->
+    <string name="card_place_name">Inventory Item Name</string>
+    <string name="card_place_num">Item #</string>
+    <string name="card_place_qty">Qty: </string>
+    <string name="card_place_desc">This is a short description of the item.</string>
+    <string name="card_default_qty">1</string>
+
+    <!-- Grid Strings -->
+    <string name="grid_header">Current Inventory</string>
+
+    <!-- App Bars -->
+    <string name="btn_nav_order">Order</string>
+
+    <!-- Dialog Prompt (Add) Strings -->
+    <string name="dialog_manage_title">Inventory Management</string>
+    <string name="dialog_manage_message">Choose an action: Register a new item, or remove a discontinued item?</string>
+    <string name="dialog_manage_add">Add New Item</string>
+    <string name="dialog_manage_remove">Discontinue Item</string>
+
+    <!-- Adding new item to database -->
+    <string name="label_add_item_title">Register New Item</string>
+    <string name="hint_item_name">Item Name</string>
+    <string name="hint_item_number">Item Number</string>
+    <string name="hint_item_description">Short Description</string>
+    <string name="btn_submit_click">Add Item</string>
+
+    <!-- Dialog Prompt (Delete) Strings -->
+    <string name="dialog_discontinue_title">Confirm Discontinued Item?</string>
+    <string name="dialog_discontinue_message">Warning: Are you sure you wish to discontinue this item? This action will permanently erase the item and the remaining stock count from your database.</string>
+    <string name="dialog_btn_confirm_delete">Yes, Discontinue</string>
+    <string name="dialog_btn_cancel_delete">No, Cancel</string>
+
+    <!-- Order Inventory Screen Strings -->
+    <string name="label_order_header">Order Items</string>
+    <string name="btn_order_submit">Finish Order</string>
+
+    <!-- Report Discrepancies -->
+    <string name="label_report_title">Report Inventory Discrepancy</string>
+    <string name="label_select_item_prompt">Select Item</string>
+    <string name="label_select_error">Select Discrepancy Type</string>
+    <string name="hint_discrepancy_count">Discrepancy Count</string>
+    <string name="hint_discrepancy_msg">Provide a short message detailing the items in question.</string>
+    <string name="btn_report_submit">Submit Report</string>
+
+    <!-- Spinner for Array -->
+    <string-array name="discrepancy_types">
+        <item>Missing Item</item>
+        <item>Extra Item(s)</item>
+        <item>Unknown</item>
+    </string-array>
+
+    <!-- SMS Notifications Strings -->
+    <string name="label_sms_title">SMS Notifications Setup</string>
+    <string name="sms_permission_prompt">To help you maintain accurate tracking, this application can send automated text messages directly to your phone, and you can receive alerts about low item stock, audit reports, and reminders about ordering deadlines. Please allow SMS permissions to receive these updates.</string>
+    <string name="btn_enable_permissions">Enable SMS Alerts</string>
+
+    <!-- Dynamic State Responses -->
+    <string name="sms_status_title_success">Text Alerts Active</string>
+    <string name="sms_status_desc_success">Thank You! SMS Alerts are now active for your phone. You will receive updates when they are available.</string>
+    <string name="sms_status_title_denied">Text Alerts Disabled</string>
+    <string name="sms_status_desc_denied">Permission denied. You have opted to not receive SMS updates from us.</string>
+
+</resources>

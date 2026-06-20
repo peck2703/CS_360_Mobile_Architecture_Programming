@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- App Bar -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="0dp"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/primary"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- Welcome Message in App Bar -->
+        <TextView
+            android:id="@+id/toolbar_welcome"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/dashboard_toolbar_welcome"
+            android:textColor="?attr/colorOnPrimary"
+            android:textSize="@dimen/text_size_subtitle"
+            android:textStyle="bold" />
+    </androidx.appcompat.widget.Toolbar>
+
+    <!-- Section Header -->
+    <TextView
+        android:id="@+id/order_header"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/label_order_header"
+        android:textSize="@dimen/text_size_title"
+        android:textStyle="bold"
+        android:textColor="#212121"
+        android:textAlignment="center"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_margin="@dimen/screen_padding" />
+
+    <!-- The ListView (Constraints fixed to prevent the rendering crash loop) -->
+    <ListView
+        android:id="@+id/order_items_view"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:divider="@null"
+        android:dividerHeight="@dimen/element_spacing_normal"
+        android:clipToPadding="false"
+        app:layout_constraintTop_toBottomOf="@id/order_header"
+        app:layout_constraintBottom_toTopOf="@id/btn_submit_order"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Submit Order Button (Properly hooked up vertically to prevent crashes) -->
+    <Button
+        android:id="@+id/btn_submit_order"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:minHeight="@dimen/touch_target_min_height"
+        android:text="@string/btn_order_submit"
+        android:layout_margin="@dimen/screen_padding"
+        app:layout_constraintTop_toBottomOf="@id/order_items_view"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

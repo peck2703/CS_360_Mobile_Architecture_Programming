@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- App Bar -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="0dp"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/primary"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- Welcome Message in App Bar -->
+        <TextView
+            android:id="@+id/toolbar_welcome"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/dashboard_toolbar_welcome"
+            android:textColor="?attr/colorOnPrimary"
+            android:textSize="@dimen/text_size_subtitle"
+            android:textStyle="bold" />
+    </androidx.appcompat.widget.Toolbar>
+
+    <!-- Initial Permission Prompt (Margins balanced to prevent layout distortions) -->
+    <LinearLayout
+        android:id="@+id/permission_request_container"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/bg_card_item"
+        android:padding="20dp"
+        android:layout_margin="@dimen/screen_padding"
+        android:visibility="visible"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- SMS Title -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/label_sms_title"
+            android:textSize="@dimen/text_size_title"
+            android:textStyle="bold"
+            android:textColor="#212121" />
+
+        <!-- Permission Prompt -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/sms_permission_prompt"
+            android:textSize="@dimen/text_size_body"
+            android:textColor="#424242"
+            android:layout_marginTop="12dp"
+            android:lineSpacingMultiplier="1.2" />
+
+        <!-- Button for Permissions (Updated layout tag format) -->
+        <Button
+            android:id="@+id/btn_request_sms_permissions"
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="@dimen/touch_target_min_height"
+            android:text="@string/btn_enable_permissions"
+            android:layout_marginTop="24dp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/sms_status_response_container"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/bg_card_item"
+        android:padding="20dp"
+        android:layout_margin="@dimen/screen_padding"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- Header responds to user choice in Java -->
+        <TextView
+            android:id="@+id/sms_status_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/sms_status_title_success"
+            android:textSize="@dimen/text_size_title"
+            android:textStyle="bold"
+            android:textColor="#1B5E20" />
+
+        <!-- Description Responds to user choice in Java -->
+        <TextView
+            android:id="@+id/sms_status_desc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/sms_status_desc_success"
+            android:textSize="@dimen/text_size_body"
+            android:textColor="#424242"
+            android:layout_marginTop="12dp"
+            android:lineSpacingMultiplier="1.2" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

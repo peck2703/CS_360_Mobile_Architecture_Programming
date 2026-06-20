@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:fillViewport="true">
+
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        >
+
+        <!-- App Bar -->
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="0dp"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/primary"
+            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <!-- Welcome Message in App Bar -->
+            <TextView
+                android:id="@+id/toolbar_welcome"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="@string/dashboard_toolbar_welcome"
+                android:textColor="?attr/colorOnPrimary"
+                android:textSize="@dimen/text_size_subtitle"
+                android:textStyle="bold"
+                />
+
+        </androidx.appcompat.widget.Toolbar>
+
+    <!-- Section Header -->
+    <TextView
+        android:id="@+id/add_item_header"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/label_add_item_title"
+        android:textSize="@dimen/text_size_subtitle"
+        android:textStyle="bold"
+        android:textColor="#212121"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="@dimen/element_spacing_normal"
+        android:padding="@dimen/screen_padding"
+        />
+
+    <!-- Item Name Input Field -->
+    <EditText
+        android:id="@+id/et_add_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:minHeight="@dimen/touch_target_min_height"
+        android:maxWidth="@dimen/touch_target_max_width"
+        app:layout_constrainedWidth="true"
+        android:hint="@string/hint_item_name"
+        android:inputType="textCapWords"
+        app:layout_constraintTop_toBottomOf="@id/add_item_header"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="@dimen/element_spacing_large"
+        android:padding="@dimen/screen_padding"
+        />
+
+        <!-- Item Number -->
+        <EditText
+            android:id="@+id/et_add_number"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:minHeight="@dimen/touch_target_min_height"
+            android:maxWidth="@dimen/touch_target_max_width"
+            app:layout_constrainedWidth="true"
+            android:hint="@string/hint_item_number"
+            android:inputType="number"
+            app:layout_constraintTop_toBottomOf="@id/et_add_name"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="@dimen/element_spacing_normal"
+            android:padding="@dimen/screen_padding"
+            />
+
+        <!-- Item Description -->
+        <EditText
+            android:id="@+id/et_add_desc"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:minHeight="160dp"
+            android:maxWidth="@dimen/touch_target_max_width"
+            app:layout_constrainedWidth="true"
+            android:hint="@string/hint_item_description"
+            android:inputType="textImeMultiLine"
+            android:gravity="top|start"
+            android:scrollbars="vertical"
+            app:layout_constraintTop_toBottomOf="@id/et_add_number"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="@dimen/element_spacing_normal"
+            android:padding="@dimen/screen_padding"
+            />
+
+        <!-- Form Submission -->
+        <android.widget.Button
+            android:id="@+id/btn_add_item_submit_item"
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:minHeight="@dimen/touch_target_min_height"
+            android:maxWidth="@dimen/touch_target_max_width"
+            android:text="@string/btn_submit_click"
+            app:layout_constraintTop_toBottomOf="@id/et_add_desc"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="@dimen/element_spacing_large"
+            android:padding="@dimen/screen_padding"
+            />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</ScrollView>

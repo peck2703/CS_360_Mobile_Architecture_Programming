@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/dashboard"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Dashboard">
+
+    <!-- App Bar -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="0dp"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/primary"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- Welcome Message in App Bar -->
+        <TextView
+            android:id="@+id/toolbar_welcome"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/dashboard_toolbar_welcome"
+            android:textColor="?attr/colorOnPrimary"
+            android:textSize="@dimen/text_size_subtitle"
+            android:textStyle="bold" />
+    </androidx.appcompat.widget.Toolbar>
+
+    <!-- Dynamic Header and Alert Container Container -->
+    <LinearLayout
+        android:id="@+id/header_container"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- Low Stock Banner (Visibility toggled dynamically via Java) -->
+        <TextView
+            android:id="@+id/tv_low_stock_banner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#FFCDD2"
+            android:textColor="#B71C1C"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:padding="12dp"
+            android:gravity="center"
+            android:text="@string/dashboard_warning"
+            android:visibility="gone"
+            android:layout_marginTop="10dp" />
+
+        <!-- Dashboard Header Text -->
+        <TextView
+            android:id="@+id/dashboard_header"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/dashboard_header_title"
+            android:textSize="@dimen/text_size_title"
+            android:textStyle="bold"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="@dimen/element_spacing_large"
+            android:layout_marginStart="@dimen/screen_padding"
+            android:layout_marginEnd="@dimen/screen_padding" />
+
+        <!-- Dashboard Sub-header Text -->
+        <TextView
+            android:id="@+id/dashboard_sub_header"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/dashboard_header_subtitle"
+            android:textSize="@dimen/text_size_subtitle"
+            android:textStyle="bold"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="@dimen/element_spacing_normal"
+            android:layout_marginStart="@dimen/screen_padding"
+            android:layout_marginEnd="@dimen/screen_padding" />
+    </LinearLayout>
+
+    <!-- Nested Grid Layout (Now anchored cleanly beneath the header container block) -->
+    <GridLayout
+        android:id="@+id/dashboard_grid_layout"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:columnCount="2"
+        android:rowCount="2"
+        android:useDefaultMargins="true"
+        android:padding="@dimen/screen_padding"
+        app:layout_constraintTop_toBottomOf="@id/header_container"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="@dimen/element_spacing_normal">
+
+        <!-- Button (0, 0) -->
+        <Button
+            android:id="@+id/btn_view_inventory"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_columnWeight="1"
+            android:layout_rowWeight="1"
+            android:text="@string/dashboard_view_inventory"
+            android:textColor="@color/white"
+            android:textSize="@dimen/text_size_grid_buttons"
+            android:gravity="center"
+            android:background="@drawable/bg_dashboard_button"
+            app:backgroundTint="@null" />
+
+        <!-- Button (0, 1) -->
+        <Button
+            android:id="@+id/btn_add_inventory"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_columnWeight="1"
+            android:layout_rowWeight="1"
+            android:text="@string/dashboard_add_remove"
+            android:textColor="@color/white"
+            android:textSize="@dimen/text_size_grid_buttons"
+            android:gravity="center"
+            android:background="@drawable/bg_dashboard_button"
+            app:backgroundTint="@color/grid_buttons" />
+
+        <!-- Button (1, 0) -->
+        <Button
+            android:id="@+id/btn_order_inventory"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_columnWeight="1"
+            android:layout_rowWeight="1"
+            android:text="@string/dashboard_order"
+            android:textColor="@color/white"
+            android:textSize="@dimen/text_size_grid_buttons"
+            android:gravity="center"
+            android:background="@drawable/bg_dashboard_button"
+            app:backgroundTint="@color/grid_buttons" />
+
+        <!-- Button (1, 1) -->
+        <Button
+            android:id="@+id/btn_report_discrepancy"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_columnWeight="1"
+            android:layout_rowWeight="1"
+            android:text="@string/dashboard_report"
+            android:textColor="@color/white"
+            android:textSize="@dimen/text_size_grid_buttons"
+            android:gravity="center"
+            android:background="@drawable/bg_dashboard_button"
+            app:backgroundTint="@color/grid_buttons" />
+    </GridLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

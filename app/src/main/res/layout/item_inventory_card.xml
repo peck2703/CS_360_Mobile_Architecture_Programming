@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_card_item"
+    android:padding="12dp"
+    android:descendantFocusability="blocksDescendants">
+
+    <!-- Inventory Picture - Left side -->
+    <ImageView
+        android:id="@+id/inventory_item_picture"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/ic_inv_card_image"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <!-- Item Name Label -->
+    <TextView
+        android:id="@+id/inventory_item_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/card_place_name"
+        android:textSize="@dimen/card_name_label"
+        android:textStyle="bold"
+        android:textColor="#212121"
+        android:layout_marginStart="12dp"
+        app:layout_constraintTop_toTopOf="@id/inventory_item_picture"
+        app:layout_constraintStart_toEndOf="@id/inventory_item_picture"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Item Number Field -->
+    <TextView
+        android:id="@+id/inventory_item_num"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/card_place_num"
+        android:textSize="@dimen/card_body"
+        android:textStyle="bold"
+        android:textColor="#757575"
+        android:layout_marginStart="2dp"
+        app:layout_constraintTop_toBottomOf="@id/inventory_item_name"
+        app:layout_constraintStart_toStartOf="@id/inventory_item_name"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Current Stock in Inventory -->
+    <TextView
+        android:id="@+id/inventory_item_qty"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/card_place_qty"
+        android:textSize="@dimen/card_badge"
+        android:textStyle="bold"
+        android:textColor="?attr/colorAccent"
+        android:layout_marginTop="2dp"
+        app:layout_constraintTop_toBottomOf="@id/inventory_item_num"
+        app:layout_constraintStart_toStartOf="@id/inventory_item_name"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Short Description -->
+    <TextView
+        android:id="@+id/inventory_item_desc"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/card_place_desc"
+        android:textSize="@dimen/card_body"
+        android:textColor="#616161"
+        android:maxLines="2"
+        android:ellipsize="end"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@id/inventory_item_qty"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Quantity Modifier Row Only visible for Order Screen -->
+    <LinearLayout
+        android:id="@+id/inventory_quantity_controls"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginTop="8dp"
+        android:visibility="gone"
+
+        app:layout_constraintTop_toBottomOf="@id/inventory_item_desc"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <Button
+            android:id="@+id/btn_card_minus"
+            style="@style/Widget.AppCompat.Button.Small"
+            android:layout_width="44dp"
+            android:layout_height="36dp"
+            android:text="@string/btn_minus"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/et_card_qty"
+            android:layout_width="60dp"
+            android:layout_height="36dp"
+            android:background="@drawable/bg_card_item"
+            android:gravity="center"
+            android:textAlignment="center"
+            android:text="@string/card_default_qty"
+            android:textSize="@dimen/card_body"
+            android:inputType="number"
+            android:maxLength="5"
+            android:selectAllOnFocus="true" />
+
+        <Button
+            android:id="@+id/btn_card_plus"
+            style="@style/Widget.AppCompat.Button.Small"
+            android:layout_width="44dp"
+            android:layout_height="36dp"
+            android:text="@string/btn_plus"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
