@@ -11,7 +11,10 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Locale;
 
 public class ReportDiscrepancyActivity extends AppCompatActivity {
     private Spinner spInventoryItems, spDiscrepancyTypes;
@@ -22,6 +25,10 @@ public class ReportDiscrepancyActivity extends AppCompatActivity {
     private ArrayList<String> spinnerDisplayList;
     private ArrayList<String> skuLookupList;
 
+    // Track state parameters passed down from session routing context
+    private String activeLocationId;
+    private String activeUserEmail;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -29,7 +36,16 @@ public class ReportDiscrepancyActivity extends AppCompatActivity {
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Enable back navigation arrow
+        }
 
+        // Capture session contexts sent forward from the Dashboard layout frame
+        activeLocationId = getIntent().getStringExtra("LOCATION_ID");
+        if (activeLocationId == null) activeLocationId = "default-location-uuid";
+
+        activeUserEmail = getIntent().getStringExtra("ACTIVE_USER");
+        if (activeUserEmail == null) activeUserEmail = "default_user";
 
         spInventoryItems = findViewById(R.id.inventory_items);
         spDiscrepancyTypes = findViewById(R.id.discrepancy_types);
@@ -41,6 +57,7 @@ public class ReportDiscrepancyActivity extends AppCompatActivity {
         spinnerDisplayList = new ArrayList<>();
         skuLookupList = new ArrayList<>();
 
+        // Populate spinner with item options assigned strictly to the active location
         populateInventorySpinner();
 
         btnSubmitDiscrepancy.setOnClickListener(new View.OnClickListener() {
@@ -53,7 +70,7 @@ public class ReportDiscrepancyActivity extends AppCompatActivity {
 
                 int selectedPosition = spInventoryItems.getSelectedItemPosition();
                 String targetSku = skuLookupList.get(selectedPosition);
-                String chosenDiscrepancyType = spDiscrepancyTypes.getSelectedItem().toString();
+                String chosenDiscrepancyStatus = spDiscrepancyTypes.getSelectedItem().toString();
 
                 String countRaw = etReportCount.getText().toString().trim();
                 String notesMessage = etReportMessage.getText().toString().trim();
@@ -62,9 +79,37 @@ public class ReportDiscrepancyActivity extends AppCompatActivity {
                     etReportCount.setError("Count is required");
                     return;
                 }
-                int reportedCount = Integer.parseInt(countRaw);
+                int reportedActualCount = Integer.parseInt(countRaw);
 
-                boolean isLogged = dbHelper.logDiscrepancy(targetSku, chosenDiscrepancyType, reportedCount, notesMessage);
+                // DYNAMIC LOOKUP: Fetch item model context directly out of our location database index
+                InventoryItemModel itemDetails = dbHelper.getItemBySkuAndLocation(targetSku, activeLocationId);
+
+                if (itemDetails == null) {
+                    Toast.makeText(ReportDiscrepancyActivity.this, "Error referencing stock records.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                String targetInvId = itemDetails.getId();        // Resolved database Primary Key UUID
+                int expectedQuantity = itemDetails.getQuantity(); // Resolved expected baseline software stock quantity
+
+                // Generate layout timeline tags
+                String currentTimeStamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
+
+                // CONSTRUCT MODEL: Wrap components into the clean object blueprint matching your helper contract
+                AuditModel auditRecord = new AuditModel();
+                auditRecord.setAuditsId(java.util.UUID.randomUUID().toString());
+                auditRecord.setUserId(activeUserEmail);
+                auditRecord.setAuditsInvId(targetInvId);
+                auditRecord.setAuditsLocId(activeLocationId);
+                auditRecord.setAuditsExpected(expectedQuantity);
+                auditRecord.setAuditsActual(reportedActualCount);
+                auditRecord.setAuditsStatus(chosenDiscrepancyStatus);
+                auditRecord.setAuditsNotes(notesMessage);
+                auditRecord.setAuditsCreated(currentTimeStamp);
+                auditRecord.setAuditsResolvedAt(""); // Empty field initially until fixed on dashboard
+
+                // EXECUTE: Fire implementation to process metrics and save to SQLite
+                boolean isLogged = dbHelper.insertAuditLog(auditRecord);
 
                 if (isLogged) {
                     Toast.makeText(ReportDiscrepancyActivity.this, "Discrepancy logged successfully!", Toast.LENGTH_SHORT).show();
@@ -76,30 +121,25 @@ public class ReportDiscrepancyActivity extends AppCompatActivity {
         });
     }
 
-    //Injects the gear icon into this screen's toolbar
     @Override
     public boolean onCreateOptionsMenu(android.view.Menu menu) {
         getMenuInflater().inflate(R.menu.dashboard_menu, menu);
         return true;
     }
 
-    //Listens for the gear icon click on this screen
     @Override
     public boolean onOptionsItemSelected(android.view.MenuItem item) {
         int id = item.getItemId();
 
         if (id == R.id.action_settings) {
-            // Safe context route: Launch the SMS page from the current activity screen
             Intent intent = new Intent(this, SMSActivity.class);
             startActivity(intent);
             return true;
         }
-        //Handle the toolbar back arrow click alongside the gear click
         else if (id == android.R.id.home) {
-            finish(); // Closes the current activity screen safely
+            finish();
             return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 
@@ -107,16 +147,12 @@ public class ReportDiscrepancyActivity extends AppCompatActivity {
         spinnerDisplayList.clear();
         skuLookupList.clear();
 
-        Cursor cursor = dbHelper.getAllItems();
-        if (cursor != null) {
-            while (cursor.moveToNext()) {
-                String name = cursor.getString(cursor.getColumnIndexOrThrow("item_name"));
-                String sku = cursor.getString(cursor.getColumnIndexOrThrow("item_number"));
+        // ARCHITECTURE RESOLUTION: Pull items assigned to THIS physical facility location
+        ArrayList<InventoryItemModel> items = dbHelper.getInventoryByLocation(activeLocationId);
 
-                spinnerDisplayList.add(name + " (#" + sku + ")");
-                skuLookupList.add(sku);
-            }
-            cursor.close();
+        for (InventoryItemModel item : items) {
+            spinnerDisplayList.add(item.getName() + " (#" + item.getSku() + ")");
+            skuLookupList.add(item.getSku());
         }
 
         ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, spinnerDisplayList);

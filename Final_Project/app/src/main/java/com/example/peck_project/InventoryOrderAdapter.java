@@ -16,6 +16,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.HashMap;
+import com.bumptech.glide.Glide;
 
 public class InventoryOrderAdapter extends BaseAdapter {
 
@@ -61,9 +62,18 @@ public class InventoryOrderAdapter extends BaseAdapter {
         tvQty.setText("Available: " + item.getQuantity());
         tvDesc.setText(item.getDescription());
 
-        if (item.getImageBytes() != null) {
-            Bitmap bitmap = BitmapFactory.decodeByteArray(item.getImageBytes(), 0, item.getImageBytes().length);
-            ivPicture.setImageBitmap(bitmap);
+        String imageUrl = item.getItemImage();
+
+        if (imageUrl != null && !imageUrl.trim().isEmpty()) {
+            // Ensure the dots connect continuously down to the closing semicolon
+            // Change the inline execution from the long path to this:
+            Glide.with(context)
+                    .load(imageUrl)
+                    .placeholder(android.R.drawable.ic_menu_gallery)
+                    .error(android.R.drawable.ic_menu_gallery)
+                    .into(ivPicture);
+        } else {
+            ivPicture.setImageResource(android.R.drawable.ic_menu_gallery);
         }
 
         LinearLayout quantityControls = convertView.findViewById(R.id.inventory_quantity_controls);

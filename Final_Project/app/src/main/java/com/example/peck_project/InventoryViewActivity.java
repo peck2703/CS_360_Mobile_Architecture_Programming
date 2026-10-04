@@ -4,11 +4,10 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.GridView;
+import android.widget.ListView;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import java.util.ArrayList;
@@ -19,14 +18,14 @@ public class InventoryViewActivity extends AppCompatActivity {
     ArrayList<InventoryItem> inventoryItemsList;
     private InventoryGridAdapter adapter;
     private boolean isDeleteModeActive = false;
-    private GridView gvInventoryItems;
+    private ListView lvInventoryItems;
     private ImageButton fabOrderInventory;
     private String activeUiMode = "VIEWER";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_inventory_grid);
+        setContentView(R.layout.activity_inventory_list);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -39,7 +38,7 @@ public class InventoryViewActivity extends AppCompatActivity {
         }
 
 
-        gvInventoryItems = findViewById(R.id.gv_inventory_items);
+        lvInventoryItems = findViewById(R.id.lv_inventory_items);
         dbHelper = new DatabaseHelper(this);
         inventoryItemsList = new ArrayList<>();
         fabOrderInventory = findViewById(R.id.fab_add_order);
@@ -142,9 +141,10 @@ public class InventoryViewActivity extends AppCompatActivity {
                 String number = cursor.getString(cursor.getColumnIndexOrThrow("item_number"));
                 int qty = cursor.getInt(cursor.getColumnIndexOrThrow("item_quantity"));
                 String desc = cursor.getString(cursor.getColumnIndexOrThrow("item_description"));
-                byte[] img = cursor.getBlob(cursor.getColumnIndexOrThrow("item_image"));
+                //byte[] img = cursor.getBlob(cursor.getColumnIndexOrThrow("item_image"));
 
-                inventoryItemsList.add(new InventoryItem(name, number, qty, desc, img));
+                String img = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_INVENTORY_ITEM_IMAGE));
+                if (img == null) img = "";
             }
             cursor.close();
         }

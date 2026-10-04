@@ -2,13 +2,10 @@ plugins {
     alias(libs.plugins.android.application)
 }
 
+// In your app/build.gradle file:
 android {
     namespace 'com.example.peck_project'
-    compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
-        }
-    }
+    compileSdk 36 // Cleaned up the broken syntax structure to match standard integers
 
     defaultConfig {
         applicationId "com.example.peck_project"
@@ -33,6 +30,7 @@ android {
     }
 }
 
+
 dependencies {
     implementation libs.activity.ktx
     implementation libs.appcompat
@@ -41,4 +39,18 @@ dependencies {
     testImplementation libs.junit
     androidTestImplementation libs.espresso.core
     androidTestImplementation libs.ext.junit
+    implementation libs.okhttp
+    implementation libs.gson
+    implementation libs.glide
+    annotationProcessor libs.glide.compiler
+
+    // Google ML Kit Barcode Scanning API
+    implementation 'com.google.mlkit:barcode-scanning:17.3.0'
+
+// CameraX core libraries (Groovy syntax)
+    def cameraxVersion = "1.4.0"
+    implementation "androidx.camera:camera-core:${cameraxVersion}"
+    implementation "androidx.camera:camera-camera2:${cameraxVersion}"
+    implementation "androidx.camera:camera-lifecycle:${cameraxVersion}"
+    implementation "androidx.camera:camera-view:${cameraxVersion}"
 }

@@ -16,6 +16,12 @@ public class Dashboard extends AppCompatActivity {
     private Button btnViewInventory, btnAddRemoveInventory, btnOrderInventory, btnReportDiscrepancy;
     private DatabaseHelper dbHelper;
 
+    // Add these class variables near your other declarations (e.g., tvWelcomeUser, dbHelper)
+    private String activeLocationId;
+    private String activeUserEmail;
+
+    private String activeLocationName;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -27,6 +33,22 @@ public class Dashboard extends AppCompatActivity {
 
         dbHelper = new DatabaseHelper(this);
 
+        // Capture the active location UUID string passed from login
+        if (getIntent().hasExtra("LOCATION_ID")) {
+            activeLocationId = getIntent().getStringExtra("LOCATION_ID");
+        } else {
+            activeLocationId = "default-location-uuid"; // Safe fallback layout default
+        }
+
+        // Capture the logged in user identifier context
+        if (getIntent().hasExtra("ACTIVE_USER")) {
+            activeUserEmail = getIntent().getStringExtra("ACTIVE_USER");
+            tvWelcomeUser.setText("Welcome, " + activeUserEmail + "!");
+        }
+        else {
+            activeUserEmail = "default_user";
+        }
+
         //Map layout hooks
         tvWelcomeUser = findViewById(R.id.toolbar_welcome);
         tvLowStockBanner = findViewById(R.id.tv_low_stock_banner);
@@ -34,6 +56,11 @@ public class Dashboard extends AppCompatActivity {
         if (getIntent().hasExtra("ACTIVE_USER")) {
             String activeUser = getIntent().getStringExtra("ACTIVE_USER");
             tvWelcomeUser.setText("Welcome, " + activeUser + "!");
+        }
+
+        //If active location is active
+        if(getIntent().hasExtra("LOCATION_NAME")){
+            activeLocationName = getIntent().getStringExtra("LOCATION_NAME");
         }
 
         //Map all 4 distinct button hooks
@@ -48,6 +75,8 @@ public class Dashboard extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(Dashboard.this, InventoryViewActivity.class);
                 intent.putExtra("UI_MODE", "VIEWER");
+                intent.putExtra("LOCATION_ID", activeLocationId); // Pass location UUID context string
+                intent.putExtra("ACTIVE_USER", activeUserEmail);   // Pass user tracking context
                 startActivity(intent);
             }
         });
@@ -65,11 +94,15 @@ public class Dashboard extends AppCompatActivity {
                                 if (which == 0) {
                                     // Open the add item page
                                     Intent intent = new Intent(Dashboard.this, AddItemActivity.class);
+                                    intent.putExtra("LOCATION_ID", activeLocationId);
+                                    intent.putExtra("ACTIVE_USER", activeUserEmail);
                                     startActivity(intent);
                                 } else if (which == 1) {
                                     // Pulls up view inventory grid flagged for item removal
                                     Intent intent = new Intent(Dashboard.this, InventoryViewActivity.class);
                                     intent.putExtra("UI_MODE", "DELETE_MODE");
+                                    intent.putExtra("LOCATION_ID", activeLocationId);
+                                    intent.putExtra("ACTIVE_USER", activeUserEmail);
                                     startActivity(intent);
                                 }
                             }
@@ -83,6 +116,8 @@ public class Dashboard extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(Dashboard.this, InventoryOrderActivity.class);
+                intent.putExtra("LOCATION_ID", activeLocationId);
+                intent.putExtra("ACTIVE_USER", activeUserEmail);
                 startActivity(intent);
             }
         });
@@ -92,19 +127,21 @@ public class Dashboard extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(Dashboard.this, ReportDiscrepancyActivity.class);
+                intent.putExtra("LOCATION_ID", activeLocationId);
+                intent.putExtra("ACTIVE_USER", activeUserEmail);
                 startActivity(intent);
             }
         });
     }
 
-    // 1. This method injects your menu XML file directly into the Toolbar frame
+    // This method injects your menu XML file directly into the Toolbar frame
     @Override
     public boolean onCreateOptionsMenu(android.view.Menu menu) {
         getMenuInflater().inflate(R.menu.dashboard_menu, menu);
         return true;
     }
 
-    // 2. This method listens for clicks on that specific gear icon button
+    // This method listens for clicks on that specific gear icon button
     @Override
     public boolean onOptionsItemSelected(android.view.MenuItem item) {
         if (item.getItemId() == R.id.action_settings) {
@@ -120,14 +157,24 @@ public class Dashboard extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        checkInventoryStockLevels();
+        checkInventoryStockLevels(activeLocationName);
     }
 
-    private void checkInventoryStockLevels() {
-        int lowStockItemsCount = dbHelper.getLowStockCount(5); // Check for items with < 5 units
+    private void checkInventoryStockLevels(String locationName) {
+        if(locationName == null){
+            locationName = "";
+        }
+        int lowStockItemsCount = dbHelper.getLowStockCount(locationName, 5);
 
         if (lowStockItemsCount > 0) {
-            // 2. FIXED: Cleaned up the raw URL string escape artifacts
+            tvLowStockBanner.setVisibility(View.VISIBLE);
+            tvLowStockBanner.setText("WARNING: " + lowStockItemsCount + " Item(s) Low on Stock!");
+        } else {
+            tvLowStockBanner.setVisibility(View.GONE);
+        }
+
+        if (lowStockItemsCount > 0) {
+            //Cleaned up the raw URL string escape artifacts
             tvLowStockBanner.setVisibility(View.VISIBLE);
             tvLowStockBanner.setText("WARNING: " + lowStockItemsCount + " Item(s) Low on Stock!");
         } else {

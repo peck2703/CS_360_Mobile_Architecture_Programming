@@ -6,12 +6,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:fillViewport="true">
 
-
-
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        >
+        android:layout_height="wrap_content">
 
         <!-- App Bar -->
         <androidx.appcompat.widget.Toolbar
@@ -33,81 +30,164 @@
                 android:text="@string/dashboard_toolbar_welcome"
                 android:textColor="?attr/colorOnPrimary"
                 android:textSize="@dimen/text_size_subtitle"
-                android:textStyle="bold"
-                />
+                android:textStyle="bold" />
 
         </androidx.appcompat.widget.Toolbar>
 
-    <!-- Section Header -->
-    <TextView
-        android:id="@+id/add_item_header"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="@string/label_add_item_title"
-        android:textSize="@dimen/text_size_subtitle"
-        android:textStyle="bold"
-        android:textColor="#212121"
-        app:layout_constraintTop_toBottomOf="@id/toolbar"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="@dimen/element_spacing_normal"
-        android:padding="@dimen/screen_padding"
-        />
+        <!-- Section Header -->
+        <TextView
+            android:id="@+id/add_item_header"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/label_add_item_title"
+            android:textSize="@dimen/text_size_subtitle"
+            android:textStyle="bold"
+            android:textColor="#212121"
+            app:layout_constraintTop_toBottomOf="@id/toolbar"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="@dimen/element_spacing_normal"
+            android:padding="@dimen/screen_padding" />
 
-    <!-- Item Name Input Field -->
-    <EditText
-        android:id="@+id/et_add_name"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:minHeight="@dimen/touch_target_min_height"
-        android:maxWidth="@dimen/touch_target_max_width"
-        app:layout_constrainedWidth="true"
-        android:hint="@string/hint_item_name"
-        android:inputType="textCapWords"
-        app:layout_constraintTop_toBottomOf="@id/add_item_header"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="@dimen/element_spacing_large"
-        android:padding="@dimen/screen_padding"
-        />
-
-        <!-- Item Number -->
+        <!-- Item Name Input Field -->
         <EditText
-            android:id="@+id/et_add_number"
+            android:id="@+id/et_add_name"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:minHeight="@dimen/touch_target_min_height"
             android:maxWidth="@dimen/touch_target_max_width"
             app:layout_constrainedWidth="true"
-            android:hint="@string/hint_item_number"
-            android:inputType="number"
+            android:hint="@string/hint_item_name"
+            android:inputType="textCapWords"
+            app:layout_constraintTop_toBottomOf="@id/add_item_header"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="@dimen/element_spacing_large"
+            android:padding="@dimen/screen_padding" />
+
+        <!-- Item Number (SKU) -->
+        <LinearLayout
+            android:id="@+id/layout_sku_container"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:maxWidth="@dimen/touch_target_max_width"
+            app:layout_constrainedWidth="true"
             app:layout_constraintTop_toBottomOf="@id/et_add_name"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="@dimen/element_spacing_normal"
-            android:padding="@dimen/screen_padding"
-            />
+            android:paddingHorizontal="@dimen/screen_padding">
+
+            <!-- Your existing SKU field (Adjusted width to 0dp weight=1 to make room) -->
+            <EditText
+                android:id="@+id/et_add_number"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:minHeight="@dimen/touch_target_min_height"
+                android:hint="@string/hint_item_number"
+                android:inputType="text"
+                android:padding="@dimen/screen_padding" />
+
+            <!-- ADD THIS SCAN BUTTON RIGHT NEXT TO IT -->
+            <ImageButton
+                android:id="@+id/btn_scan_sku"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="8dp"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:src="@android:drawable/ic_menu_camera"
+                android:contentDescription="@string/img_scan_barcode" />
+
+        </LinearLayout>
+
+        <!-- Initial Quantity Field -->
+        <EditText
+            android:id="@+id/et_add_quantity"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:minHeight="@dimen/touch_target_min_height"
+            android:maxWidth="@dimen/touch_target_max_width"
+            app:layout_constrainedWidth="true"
+            android:hint="@string/hint_init_quant"
+            android:text="@string/hint_init_quant_text"
+            android:inputType="number"
+            app:layout_constraintTop_toBottomOf="@id/layout_sku_container"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="@dimen/element_spacing_normal"
+            android:padding="@dimen/screen_padding" />
+
+        <!-- Default Cost Price Field -->
+        <EditText
+            android:id="@+id/et_add_cost"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:minHeight="@dimen/touch_target_min_height"
+            android:maxWidth="@dimen/touch_target_max_width"
+            app:layout_constrainedWidth="true"
+            android:hint="@string/hint_cost_price"
+            android:inputType="numberDecimal"
+            app:layout_constraintTop_toBottomOf="@id/et_add_quantity"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="@dimen/element_spacing_normal"
+            android:padding="@dimen/screen_padding" />
+
+        <!-- Default Retail Price Field -->
+        <EditText
+            android:id="@+id/et_add_retail"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:minHeight="@dimen/touch_target_min_height"
+            android:maxWidth="@dimen/touch_target_max_width"
+            app:layout_constrainedWidth="true"
+            android:hint="@string/hint_retail_price"
+            android:inputType="numberDecimal"
+            app:layout_constraintTop_toBottomOf="@id/et_add_cost"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="@dimen/element_spacing_normal"
+            android:padding="@dimen/screen_padding" />
+
+        <!-- Reorder Point Field -->
+        <EditText
+            android:id="@+id/et_add_reorder"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:minHeight="@dimen/touch_target_min_height"
+            android:maxWidth="@dimen/touch_target_max_width"
+            app:layout_constrainedWidth="true"
+            android:hint="@string/hint_reorder_point"
+            android:text="@string/hint_reorder_point_text"
+            android:inputType="number"
+            app:layout_constraintTop_toBottomOf="@id/et_add_retail"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="@dimen/element_spacing_normal"
+            android:padding="@dimen/screen_padding" />
 
         <!-- Item Description -->
         <EditText
             android:id="@+id/et_add_desc"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:minHeight="160dp"
+            android:minHeight="140dp"
             android:maxWidth="@dimen/touch_target_max_width"
             app:layout_constrainedWidth="true"
             android:hint="@string/hint_item_description"
             android:inputType="textImeMultiLine"
             android:gravity="top|start"
             android:scrollbars="vertical"
-            app:layout_constraintTop_toBottomOf="@id/et_add_number"
+            app:layout_constraintTop_toBottomOf="@id/et_add_reorder"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="@dimen/element_spacing_normal"
-            android:padding="@dimen/screen_padding"
-            />
+            android:padding="@dimen/screen_padding" />
 
-        <!-- Form Submission -->
+        <!-- Form Submission Button -->
         <android.widget.Button
             android:id="@+id/btn_add_item_submit_item"
             style="@style/Widget.AppCompat.Button.Colored"
@@ -120,8 +200,8 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="@dimen/element_spacing_large"
-            android:padding="@dimen/screen_padding"
-            />
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            android:layout_marginBottom="@dimen/element_spacing_large"
+            android:padding="@dimen/screen_padding" />
 
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

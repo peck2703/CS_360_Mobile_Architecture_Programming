@@ -55,12 +55,12 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 // Extract input string text values and trim accidental whitespaces
-                String username = etUsername.getText().toString().trim();
+                String username = etUsername.getText().toString().trim(); // Treat username input explicitly as Email
                 String password = etPassword.getText().toString().trim();
 
                 // Guard clauses: Check for empty fields before querying the DB
                 if (username.isEmpty()) {
-                    etUsername.setError("Username/Email cannot be empty");
+                    etUsername.setError("Email cannot be empty");
                     return;
                 }
                 if (password.isEmpty()) {
@@ -68,24 +68,39 @@ public class LoginActivity extends AppCompatActivity {
                     return;
                 }
 
-                // Execute SQL Database check using your unified credential verifier
-                boolean isValid = dbHelper.checkUserCredentials(username, password);
-                if (isValid) {
-                    // Move to app dashboard if successful login
-                    Intent intent = new Intent(LoginActivity.this, Dashboard.class);
+                // Supabase requests run over the web, so move execution off the main UI thread
+                new Thread(() -> {
+                    try {
+                        SupabaseClient client = SupabaseClient.getInstance();
+                        String jwtToken = client.authenticateUser(username, password);
 
-                    // Pass the active name profile packet downstream to personalize the app view
-                    intent.putExtra("ACTIVE_USER", username);
-                    startActivity(intent);
+                        // Return to UI thread to handle UI visual transitions
+                        runOnUiThread(() -> {
+                            if (jwtToken != null) {
+                                // Trigger background sync immediately now that client has auth clearances
+                                SyncManager syncManager = new SyncManager(LoginActivity.this);
+                                syncManager.downloadInventoryFromCloud();
 
-                    // Terminate screen state safely to navigate user backwards out of app completely on back click
-                    finish();
-                } else {
-                    // Provide visual feedback if credentials fail lookup validations
-                    Toast.makeText(LoginActivity.this, "Invalid Username or Password", Toast.LENGTH_SHORT).show();
-                }
+                                // Move to app dashboard if successful login
+                                Intent intent = new Intent(LoginActivity.this, Dashboard.class);
+                                intent.putExtra("ACTIVE_USER", username);
+                                startActivity(intent);
+                                finish();
+                            } else {
+                                Toast.makeText(LoginActivity.this, "Invalid Email or Password", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        runOnUiThread(() ->
+                                Toast.makeText(LoginActivity.this, "Network error. Please try again.", Toast.LENGTH_SHORT).show()
+                        );
+                    }
+                }).start();
             }
         });
+
 
         //Create account button
         btnCreate.setOnClickListener(new View.OnClickListener() {

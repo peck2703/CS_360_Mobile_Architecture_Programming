@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+
+    <!-- Thick crisp neon-green border lines -->
+    <stroke
+        android:width="4dp"
+        android:color="#00FF00" />
+
+    <!-- Keeps the interior transparent so you can see the camera preview stream -->
+    <solid android:color="@android:color/transparent" />
+
+    <!-- Smooth rounded corner curves -->
+    <corners android:radius="16dp" />
+</shape>

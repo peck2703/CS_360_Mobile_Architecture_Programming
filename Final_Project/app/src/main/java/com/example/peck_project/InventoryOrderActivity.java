@@ -123,7 +123,8 @@ public class InventoryOrderActivity extends AppCompatActivity {
                 String number = cursor.getString(cursor.getColumnIndexOrThrow("item_number"));
                 int qty = cursor.getInt(cursor.getColumnIndexOrThrow("item_quantity"));
                 String desc = cursor.getString(cursor.getColumnIndexOrThrow("item_description"));
-                byte[] img = cursor.getBlob(cursor.getColumnIndexOrThrow("item_image"));
+                byte[] imgBytes = cursor.getBlob(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_INVENTORY_ITEM_IMAGE));
+                String img = (imgBytes == null) ? "" : new String(imgBytes);
 
                 inventoryItemsList.add(new InventoryItem(name, number, qty, desc, img));
             }

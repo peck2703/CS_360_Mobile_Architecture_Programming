@@ -12,6 +12,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.util.ArrayList;
+import com.bumptech.glide.Glide;
 
 public class InventoryGridAdapter extends BaseAdapter {
 
@@ -55,21 +56,33 @@ public class InventoryGridAdapter extends BaseAdapter {
         tvQty.setText("Qty: " + currentItem.getQuantity());
         tvDesc.setText(currentItem.getDescription());
 
-        // Low stock alert styling (less than 5 items)
+        // Dynamic low stock alert styling using your new reorderPoint column
         int currentStock = currentItem.getQuantity();
-        if (currentStock < 5) {
+        int alertThreshold = currentItem.reorderPoint; // Accesses your newly added column profile variable
+
+        if (currentStock <= alertThreshold) {
             tvQty.setTextColor(android.graphics.Color.RED);
             tvQty.setText("Qty: " + currentStock + " (LOW STOCK!)");
         } else {
             tvQty.setTextColor(android.graphics.Color.parseColor("#4CAF50")); // Default Green color
         }
 
-        byte[] imageBytes = currentItem.getImageBytes();
-        if (imageBytes != null && imageBytes.length > 0) {
-            Bitmap bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
-            ivPicture.setImageBitmap(bitmap);
+        // Modern image loading loop using Glide to download the string URL path
+        String imageUrl = currentItem.getItemImage();
+
+        if (imageUrl != null && !imageUrl.trim().isEmpty()) {
+            // Change the inline execution from the long path to this:
+            Glide.with(context)
+                    .load(imageUrl)
+                    .placeholder(android.R.drawable.ic_menu_gallery)
+                    .error(android.R.drawable.ic_menu_gallery)
+                    .into(ivPicture);
+
+        } else {
+            ivPicture.setImageResource(android.R.drawable.ic_menu_gallery);
         }
 
         return convertView;
     }
+
 }

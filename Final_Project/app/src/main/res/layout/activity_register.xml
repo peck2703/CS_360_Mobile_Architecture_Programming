@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -20,55 +21,21 @@
             android:textColor="?attr/colorOnBackground"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            />
-
-        <!-- First Name Edit Text -->
-        <EditText
-            android:id="@+id/register_first_name"
-            android:layout_height="wrap_content"
-            android:layout_width="0dp"
-            android:minHeight="@dimen/touch_target_min_height"
-            android:text="@string/txt_create_first_name"
-            android:textStyle="italic"
-            android:inputType="textPersonName"
-            app:layout_constraintTop_toBottomOf="@id/create_login_title"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/register_last_name"
-            android:layout_marginTop="@dimen/element_spacing_large"
-            android:layout_marginEnd="16dp"
-
-            />
-        <EditText
-            android:id="@+id/register_last_name"
-            android:layout_height="wrap_content"
-            android:layout_width="0dp"
-            android:minHeight="@dimen/touch_target_min_height"
-            android:text="@string/txt_create_last_name"
-            android:textStyle="italic"
-            android:inputType="textPersonName"
-            app:layout_constraintTop_toBottomOf="@id/create_login_title"
-            app:layout_constraintStart_toEndOf="@id/register_first_name"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="@dimen/element_spacing_large"
-            android:layout_marginEnd="0dp"
-            />
+            app:layout_constraintEnd_toEndOf="parent" />
 
         <!-- Email Address -->
         <EditText
             android:id="@+id/register_email_address"
-            android:layout_height="wrap_content"
             android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:inputType="textEmailAddress"
             android:minHeight="@dimen/touch_target_min_height"
             android:text="@string/txt_email_address"
             android:textStyle="italic"
-            android:inputType="textEmailAddress"
-            app:layout_constraintTop_toBottomOf="@id/register_first_name"
-            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="@dimen/element_spacing_normal"
-            android:layout_marginEnd="0dp"
-            />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/create_login_title"
+            android:layout_marginTop="50dp" />
 
         <!-- Password Text Prompt -->
         <TextView
@@ -83,8 +50,7 @@
             app:layout_constraintHorizontal_weight="0.4"
             app:layout_constraintTop_toBottomOf="@id/register_email_address"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/register_password"
-            />
+            app:layout_constraintEnd_toStartOf="@id/register_password" />
 
         <!-- Password 1 Field -->
         <EditText
@@ -98,8 +64,7 @@
             app:layout_constraintHorizontal_weight="0.6"
             app:layout_constraintBaseline_toBaselineOf="@id/txt_create_password"
             app:layout_constraintStart_toEndOf="@id/txt_create_password"
-            app:layout_constraintEnd_toEndOf="parent"
-            />
+            app:layout_constraintEnd_toEndOf="parent" />
 
         <!-- Re-Enter Password Text Prompt -->
         <TextView
@@ -114,10 +79,9 @@
             app:layout_constraintHorizontal_weight="0.4"
             app:layout_constraintTop_toBottomOf="@id/register_password"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/register_re_enter_password"
-            />
+            app:layout_constraintEnd_toStartOf="@id/register_re_enter_password" />
 
-        <!-- Password 1 Field -->
+        <!-- Password 2 Field -->
         <EditText
             android:id="@+id/register_re_enter_password"
             android:layout_width="0dp"
@@ -129,8 +93,46 @@
             app:layout_constraintHorizontal_weight="0.6"
             app:layout_constraintBaseline_toBaselineOf="@id/txt_create_re_enter_password"
             app:layout_constraintStart_toEndOf="@id/txt_create_re_enter_password"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- Existing Location Dropdown -->
+        <Spinner
+            android:id="@+id/spinner_location"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:minHeight="@dimen/touch_target_min_height"
+            android:layout_marginTop="@dimen/element_spacing_normal"
+            app:layout_constraintTop_toBottomOf="@id/register_re_enter_password"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- Checkbox to create a new location -->
+        <CheckBox
+            android:id="@+id/checkbox_new_location"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:minHeight="@dimen/touch_target_min_height"
+            android:text="@string/txt_new_location"
+            android:textColor="?attr/colorOnBackground"
+            android:layout_marginTop="@dimen/element_spacing_normal"
+            app:layout_constraintTop_toBottomOf="@id/spinner_location"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- New Location Input Field (Hidden by default) -->
+        <EditText
+            android:id="@+id/register_new_location_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:minHeight="@dimen/touch_target_min_height"
+            android:hint="@string/txt_new_location_name"
+            android:inputType="text"
+            android:visibility="gone"
+            android:layout_marginTop="@dimen/element_spacing_normal"
+            app:layout_constraintTop_toBottomOf="@id/checkbox_new_location"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            />
+            tools:visibility="visible" />
 
         <!-- Create Account Button -->
         <android.widget.Button
@@ -141,14 +143,12 @@
             android:maxWidth="@dimen/touch_target_max_width"
             android:text="@string/btn_create_account"
             android:textStyle="bold"
-            app:layout_constraintTop_toBottomOf="@id/txt_create_re_enter_password"
+            app:layout_constraintTop_toBottomOf="@id/register_new_location_name"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="@dimen/element_spacing_large"
             android:layout_marginStart="@dimen/element_spacing_large"
-            android:layout_marginEnd="@dimen/element_spacing_large"
-            />
+            android:layout_marginEnd="@dimen/element_spacing_large" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
 </ScrollView>

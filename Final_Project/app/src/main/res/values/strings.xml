@@ -9,6 +9,8 @@
     <string name="btn_login">Login</string>
     <string name="btn_create_account">Create Account</string>
     <string name="txt_forgot_password">Forgot/Lost Password?</string>
+    <string name="txt_new_location">Create new Location:</string>
+    <string name="txt_new_location_name">New Location Name:</string>
 
     <!-- Resources for Create Account that are separate -->
     <string name="txt_create_account">Create Your Account</string>
@@ -64,6 +66,14 @@
     <string name="hint_item_number">Item Number</string>
     <string name="hint_item_description">Short Description</string>
     <string name="btn_submit_click">Add Item</string>
+    <string name="img_scan_barcode">Scan Barcode</string>
+    <string name="hint_init_quant">Initial Quantity</string>
+    <string name="hint_init_quant_text">0</string>
+    <string name="hint_cost_price">Cost Price ($)</string>
+    <string name="hint_retail_price">Retail Price ($)</string>
+    <string name="hint_reorder_point">Reorder Alert Threshold</string>
+    <string name="hint_reorder_point_text">0</string>
+
 
     <!-- Dialog Prompt (Delete) Strings -->
     <string name="dialog_discontinue_title">Confirm Discontinued Item?</string>
