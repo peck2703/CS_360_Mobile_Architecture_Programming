@@ -32,24 +32,6 @@ public class LoginActivity extends AppCompatActivity {
         btnLogin = findViewById(R.id.btn_primary_login);
         btnCreate = findViewById(R.id.btn_create_login);
 
-        etUsername.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if(hasFocus){
-                    etUsername.setText("");
-                }
-            }
-        });
-
-        etPassword.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if(hasFocus){
-                    etPassword.setText("");
-                }
-            }
-        });
-
         // Handle Login verification routing
         btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -72,18 +54,26 @@ public class LoginActivity extends AppCompatActivity {
                 new Thread(() -> {
                     try {
                         SupabaseClient client = SupabaseClient.getInstance();
-                        String jwtToken = client.authenticateUser(username, password);
+                        String authResult = client.authenticateUser(username, password);
 
-                        // Return to UI thread to handle UI visual transitions
                         runOnUiThread(() -> {
-                            if (jwtToken != null) {
-                                // Trigger background sync immediately now that client has auth clearances
+                            if (authResult != null) {
+                                // FIXED: Split the combined response token data strings cleanly
+                                String[] authData = authResult.split(",");
+                                String jwtToken = authData[0];
+                                String realUserUuid = authData[1]; // Extracts the secure 36-character cloud UUID string!
+
                                 SyncManager syncManager = new SyncManager(LoginActivity.this);
                                 syncManager.downloadInventoryFromCloud();
 
-                                // Move to app dashboard if successful login
                                 Intent intent = new Intent(LoginActivity.this, Dashboard.class);
-                                intent.putExtra("ACTIVE_USER", username);
+
+                                // Pass the secure UUID string for your database sync pipelines
+                                intent.putExtra("ACTIVE_USER_UUID", realUserUuid);
+
+                                // Pass the readable text email address string separately for the visual toolbar greeting!
+                                intent.putExtra("ACTIVE_USER_EMAIL", username);
+
                                 startActivity(intent);
                                 finish();
                             } else {

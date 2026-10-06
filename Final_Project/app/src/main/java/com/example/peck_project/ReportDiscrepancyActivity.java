@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -38,7 +39,23 @@ public class ReportDiscrepancyActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Enable back navigation arrow
+
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);    // Shows the back arrow graphic
+            getSupportActionBar().setDisplayShowHomeEnabled(true);    // Makes it clickable
+
+            String displayEmail = getIntent().getStringExtra("ACTIVE_USER_EMAIL");
+            if (displayEmail == null || displayEmail.trim().isEmpty()) {
+                displayEmail = "User";
+            }
+
+            TextView tvTitle = findViewById(R.id.toolbar_welcome);
+            if (tvTitle != null) {
+                String formattedGreeting = String.format(getString(R.string.dashboard_toolbar_welcome), displayEmail);
+                tvTitle.setText(formattedGreeting);
+            }
         }
+
+        String databaseUserUuid = getIntent().getStringExtra("ACTIVE_USER_UUID");
 
         // Capture session contexts sent forward from the Dashboard layout frame
         activeLocationId = getIntent().getStringExtra("LOCATION_ID");

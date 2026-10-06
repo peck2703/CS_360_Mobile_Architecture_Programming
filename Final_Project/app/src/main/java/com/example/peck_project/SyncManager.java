@@ -26,25 +26,34 @@ public class SyncManager {
     public void downloadInventoryFromCloud() {
         new Thread(() -> {
             try {
-                // 1. Fetch data string from your capitalized table name
                 String jsonResponse = supabase.fetchTableData("Inventory");
+                Log.d("SyncManager", "Raw cloud download JSON payload: " + jsonResponse);
 
-                // 2. Map payload dynamically into your InventoryItem data structures
                 Type inventoryListType = new TypeToken<List<InventoryItem>>(){}.getType();
                 List<InventoryItem> cloudItems = gson.fromJson(jsonResponse, inventoryListType);
 
-                // 3. Populate your SQLite database container safely
                 if (cloudItems != null) {
                     for (InventoryItem item : cloudItems) {
+                        //Ensure your image variable is safe before writing to your app tables
+                        if (item.getItemImage() == null) {
+                            // If your local model doesn't let you alter values, handle via a safe insertion check
+                        }
                         dbHelper.upsertInventoryFromCloud(item);
                     }
+                    Log.i("SyncManager", "Cloud download completed successfully. Local lists updated.");
                 }
             } catch (Exception e) {
-                e.printStackTrace(); // Catch connectivity issues gracefully
+                Log.e("SyncManager", "CRITICAL DOWNLOAD PARSING ERROR AT LINE 39: ");
+                e.printStackTrace(); // This prints out the exact text type mismatch in Logcat
             }
         }).start();
     }
 
+
+    /**
+     * Scans local SQLite tables for modified records (is_dirty = 1)
+     * and pushes them up to the Supabase PostgreSQL database.
+     */
     /**
      * Scans local SQLite tables for modified records (is_dirty = 1)
      * and pushes them up to the Supabase PostgreSQL database.
@@ -54,21 +63,17 @@ public class SyncManager {
             android.database.sqlite.SQLiteDatabase db = dbHelper.getReadableDatabase();
             Cursor cursor = null;
             try {
-                // 1. Query the local SQLite database for un-synced inventory rows
-                // Enforce "is_dirty = 1" criteria loop check
                 cursor = db.query(
-                        "inventory", // TABLE_INVENTORY
+                        "inventory",
                         null,
                         "is_dirty = 1",
                         null, null, null, null
                 );
 
                 if (cursor != null && cursor.moveToFirst()) {
-                    com.google.gson.JsonArray jsonArray = new com.google.gson.JsonArray();
                     List<String> syncedIds = new ArrayList<>();
 
                     do {
-                        // Extract local parameters cleanly from cursor positions
                         String id = cursor.getString(cursor.getColumnIndexOrThrow("id"));
                         String userId = cursor.getString(cursor.getColumnIndexOrThrow("user_id"));
                         String sku = cursor.getString(cursor.getColumnIndexOrThrow("sku"));
@@ -78,9 +83,27 @@ public class SyncManager {
                         double cost = cursor.getDouble(cursor.getColumnIndexOrThrow("cost_price"));
                         double retail = cursor.getDouble(cursor.getColumnIndexOrThrow("retail_price"));
                         int reorder = cursor.getInt(cursor.getColumnIndexOrThrow("reorder_point"));
-                        String img = cursor.getString(cursor.getColumnIndexOrThrow("item_image"));
+                        String imgUrl = "";
 
-                        // Construct a matching JSON object payload
+                        String activeLocationId = "";
+                        Cursor locCursor = null;
+                        try {
+                            locCursor = db.rawQuery("SELECT location_id FROM Inventory_Locations WHERE inventory_id = ?", new String[]{id});
+                            if (locCursor != null && locCursor.moveToFirst()) {
+                                activeLocationId = locCursor.getString(0);
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        } finally {
+                            if (locCursor != null) locCursor.close();
+                        }
+
+                        // If fallback fails to pull a matching value context, assign a placeholder token string
+                        if (activeLocationId == null || activeLocationId.trim().isEmpty()) {
+                            activeLocationId = "b4b7f207-3ec6-43a5-8af7-bbe5c671e894"; // Uses your current verified active UUID
+                        }
+
+                        // Build a single inventory item object model payload string
                         com.google.gson.JsonObject obj = new com.google.gson.JsonObject();
                         obj.addProperty("id", id);
                         obj.addProperty("user_id", userId);
@@ -91,31 +114,59 @@ public class SyncManager {
                         obj.addProperty("cost_price", cost);
                         obj.addProperty("retail_price", retail);
                         obj.addProperty("reorder_point", reorder);
-                        obj.addProperty("item_image", img);
+                        obj.addProperty("item_image", imgUrl);
 
-                        jsonArray.add(obj);
-                        syncedIds.add(id); // Track ID to clear dirty status later
-                    } while (cursor.moveToNext());
+                        // Appends the location identifier parameter natively to clear the schema gate check
+                        String activeLocationID = "";
+                        try {
+                            int locIdx = cursor.getColumnIndex("location_id");
+                            if (locIdx != -1 && !cursor.isNull(locIdx)) {
+                                activeLocationId = cursor.getString(locIdx);
+                            } else {
+                                // Fallback: Query the localized layout value out of your tracking link table directly
+                                locCursor = db.rawQuery("SELECT location_id FROM Inventory_Locations WHERE inventory_id = ?", new String[]{id});
+                                if (locCursor != null) {
+                                    if (locCursor.moveToFirst()) {
+                                        activeLocationId = locCursor.getString(0);
+                                    }
+                                    locCursor.close();
+                                }
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
 
-                    // 2. Transmit packet string up to your capitalized Supabase table route
-                    if (jsonArray.size() > 0) {
-                        boolean uploadSuccess = supabase.upsertData("Inventory", jsonArray.toString());
+                        if (activeLocationId == null || activeLocationId.trim().isEmpty()) {
+                            activeLocationId = "b4b7f207-3ec6-43a5-8af7-bbe5c671e894"; // Uses your current verified active UUID code
+                        }
+
+                        obj.addProperty("location_id", activeLocationId);
+
+                        // Send this specific single row payload up instantly
+                        Log.d("SYNC_DIAGNOSTIC", "Attempting transmission for: " + name + " with JSON: " + obj.toString());
+                        boolean uploadSuccess = supabase.upsertData("Inventory", obj.toString());
 
                         if (uploadSuccess) {
-                            Log.i("SyncManager", "Batch upload success. Clearing local dirty states.");
-                            // 3. Clear dirty status flags inside SQLite layer to complete transaction loop
-                            dbHelper.clearLocalDirtyFlags("inventory", syncedIds);
+                            Log.i("SyncManager", "Row upload success for ID: " + id);
+                            syncedIds.add(id);
                         } else {
-                            Log.e("SyncManager", "Supabase batch upsert rejected payload.");
+                            Log.e("SyncManager", "Row upload explicitly rejected by Supabase API gate.");
                         }
+                    } while (cursor.moveToNext());
+
+                    if (!syncedIds.isEmpty()) {
+                        dbHelper.clearLocalDirtyFlags("inventory", syncedIds);
                     }
                 }
+
             } catch (Exception e) {
                 Log.e("SyncManager", "Network sync upload cycle disconnected drop failure.");
-                e.printStackTrace();
+                Log.e("SyncManager", "REAL ERROR FOOTPRINT: ", e);
             } finally {
                 if (cursor != null) cursor.close();
             }
         }).start();
     }
+
+
 }

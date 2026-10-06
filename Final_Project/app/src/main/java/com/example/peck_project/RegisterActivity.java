@@ -39,6 +39,17 @@ public class RegisterActivity extends AppCompatActivity {
 
         android.widget.Button btnSubmitRegistration = findViewById(R.id.btn_register_create);
 
+        chCreateNewLoc.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                etNewLocation.setVisibility(View.VISIBLE);
+                spnLocation.setVisibility(View.GONE); // Optional: hide spinner if creating new
+            }
+            else {
+                etNewLocation.setVisibility(View.GONE);
+                spnLocation.setVisibility(View.VISIBLE); // Optional: bring spinner back
+            }
+        });
+
         btnSubmitRegistration.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -48,21 +59,23 @@ public class RegisterActivity extends AppCompatActivity {
 
                 //Final location name based on user selection
                 String temporaryStringName = "";
-                if(chCreateNewLoc.isChecked()){
+                if (chCreateNewLoc.isChecked()) {
                     temporaryStringName = etNewLocation.getText().toString().trim();
-                    if(temporaryStringName.isEmpty()){
+                    if (temporaryStringName.isEmpty()) {
                         etNewLocation.setError("Please enter a valid location name.");
                         return;
                     }
-                    else{
-                        if (spnLocation.getSelectedItem() != null) {
-                            temporaryStringName = spnLocation.getSelectedItem().toString();
-                        } else {
-                            Toast.makeText(RegisterActivity.this, "Please select or create a location.", Toast.LENGTH_SHORT).show();
-                            return;
-                        }
+                }
+                else {
+                    // If the checkbox is NOT checked, pull from the spinner instead
+                    if (spnLocation.getSelectedItem() != null) {
+                        temporaryStringName = spnLocation.getSelectedItem().toString();
+                    } else {
+                        Toast.makeText(RegisterActivity.this, "Please select a location.", Toast.LENGTH_SHORT).show();
+                        return;
                     }
                 }
+
 
                 final String finalLocationName = temporaryStringName;
                 // Guard clauses for email/password credentials

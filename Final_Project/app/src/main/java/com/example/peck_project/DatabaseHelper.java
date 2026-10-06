@@ -326,7 +326,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.beginTransaction(); // Wrap in transaction to avoid orphan items if one statement fails
 
         try {
-            // 1. Write product to global Inventory list catalog
+            // Write product to global Inventory list catalog
             ContentValues itemValues = new ContentValues();
             itemValues.put(COL_INVENTORY_ITEM_ID, itemId);
             itemValues.put(COL_INVENTORY_USER_ID, userId);
@@ -338,16 +338,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             itemValues.put(COL_INVENTORY_RETAIL_PRICE, retail);
             itemValues.put(COL_INVENTORY_REORDER_POINT, reorderPoint);
             itemValues.put(COL_INVENTORY_ITEM_IMAGE, imageBytes);
-            itemValues.put("is_dirty", 0);
+            itemValues.put("is_dirty", 1);
 
             long itemResult = db.insert(TABLE_INVENTORY, null, itemValues);
 
-            // 2. Map item directly to specific physical Location link table
+            // Map item directly to specific physical Location link table
             ContentValues locValues = new ContentValues();
             locValues.put(COL_INV_LOC_INV_ID, itemId);
             locValues.put(COL_INV_LOC_LOC_ID, locationId);
             locValues.put(COL_INV_LOC_QUANTITY, quantity);
-            locValues.put("is_dirty", 0);
+            locValues.put("is_dirty", 1);
 
             long locResult = db.insert(TABLE_INVENTORY_LOCATIONS, null, locValues);
 
@@ -464,27 +464,31 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
 
-        // Mapping the data object attributes to your pre-existing SQLite columns
         values.put(COL_INVENTORY_ITEM_ID, item.id);
         values.put(COL_INVENTORY_USER_ID, item.userId);
-        values.put(COL_INVENTORY_SKU, item.getItemNumber()); // Grabs the sku property mapping
-        values.put(COL_INVENTORY_ITEM_NAME, item.getName());  // Grabs the itemName property mapping
+        values.put(COL_INVENTORY_SKU, item.getItemNumber());
+        values.put(COL_INVENTORY_ITEM_NAME, item.getName());
         values.put(COL_INVENTORY_ITEM_DESC, item.getDescription());
         values.put(COL_INVENTORY_ITEM_QTY, item.getQuantity());
         values.put(COL_INVENTORY_COST_PRICE, item.costPrice);
         values.put(COL_INVENTORY_RETAIL_PRICE, item.retailPrice);
         values.put(COL_INVENTORY_REORDER_POINT, item.reorderPoint);
-        values.put(COL_INVENTORY_ITEM_IMAGE, item.getItemImage());
+
+        // Convert the incoming cloud image string into a safe binary byte array layout block
+        String cloudImgStr = item.getItemImage();
+        byte[] finalImageBlob = (cloudImgStr == null) ? new byte[0] : cloudImgStr.getBytes();
+        values.put(COL_INVENTORY_ITEM_IMAGE, finalImageBlob);
+
         values.put(COL_INVENTORY_CREATED_AT, item.createdAt);
         values.put(COL_INVENTORY_UPDATED_AT, item.updatedAt);
 
         // Cloud states are already successfully written to the server, so mark clean locally
         values.put(COL_IS_DIRTY, 0);
-        values.put(COL_LAST_UPDATED, String.valueOf(System.currentTimeMillis()));
 
         // Using CONFLICT_REPLACE ensures it overwrites matching primary IDs instead of throwing an index crash
-        db.insertWithOnConflict(TABLE_INVENTORY, null, values, SQLiteDatabase.CONFLICT_REPLACE);
+        db.replace("inventory", null, values);
     }
+
 
     public int getLowStockCount(String locationId, int defaultThreshold) {
         SQLiteDatabase db = this.getReadableDatabase();
@@ -519,7 +523,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         try {
             android.content.ContentValues values = new android.content.ContentValues();
             values.put("is_dirty", 0); // Flip flag clean
-            values.put("last_updated", String.valueOf(System.currentTimeMillis()));
+            values.put("updated_at", String.valueOf(System.currentTimeMillis()));
 
             for (String id : idList) {
                 db.update(tableName, values, "id = ?", new String[]{id});

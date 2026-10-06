@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -32,7 +33,20 @@ public class InventoryOrderActivity extends AppCompatActivity {
 
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);    // Shows the back arrow graphic
             getSupportActionBar().setDisplayShowHomeEnabled(true);    // Makes it clickable
+
+            String displayEmail = getIntent().getStringExtra("ACTIVE_USER_EMAIL");
+            if (displayEmail == null || displayEmail.trim().isEmpty()) {
+                displayEmail = "User";
+            }
+
+            TextView tvTitle = findViewById(R.id.toolbar_welcome);
+            if (tvTitle != null) {
+                String formattedGreeting = String.format(getString(R.string.dashboard_toolbar_welcome), displayEmail);
+                tvTitle.setText(formattedGreeting);
+            }
         }
+
+        String databaseUserUuid = getIntent().getStringExtra("ACTIVE_USER_UUID");
 
         lvOrderItems = findViewById(R.id.order_items_view);
         btnSubmitOrder = findViewById(R.id.btn_submit_order);
@@ -53,7 +67,7 @@ public class InventoryOrderActivity extends AppCompatActivity {
 
                     if (quantityOrdered > 0) {
                         int updatedStockBalance = item.getQuantity() + quantityOrdered;
-                        boolean rowsUpdated = dbHelper.updateItemQuantity(item.getItemNumber(), updatedStockBalance);
+                        boolean rowsUpdated = dbHelper.updateItemQuantity(item.id, updatedStockBalance);
                         if (!rowsUpdated) {
                             transactionSuccess = false;
                         }
@@ -61,6 +75,16 @@ public class InventoryOrderActivity extends AppCompatActivity {
                 }
 
                 if (transactionSuccess) {
+                    // Fire off the background thread to upload the new quantities to Supabase
+                    new Thread(() -> {
+                        try {
+                            SyncManager syncManager = new SyncManager(InventoryOrderActivity.this);
+                            syncManager.uploadLocalChangesToCloud();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }).start();
+
                     Toast.makeText(InventoryOrderActivity.this, "Bulk order processed successfully!", Toast.LENGTH_SHORT).show();
                     finish();
                 } else {
@@ -120,13 +144,17 @@ public class InventoryOrderActivity extends AppCompatActivity {
 
             while (cursor.moveToNext()) {
                 String name = cursor.getString(cursor.getColumnIndexOrThrow("item_name"));
-                String number = cursor.getString(cursor.getColumnIndexOrThrow("item_number"));
+                String number = cursor.getString(cursor.getColumnIndexOrThrow("sku"));
                 int qty = cursor.getInt(cursor.getColumnIndexOrThrow("item_quantity"));
                 String desc = cursor.getString(cursor.getColumnIndexOrThrow("item_description"));
                 byte[] imgBytes = cursor.getBlob(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_INVENTORY_ITEM_IMAGE));
                 String img = (imgBytes == null) ? "" : new String(imgBytes);
 
-                inventoryItemsList.add(new InventoryItem(name, number, qty, desc, img));
+                InventoryItem item = new InventoryItem(name, number, qty, desc, img);
+                item.id = cursor.getString(cursor.getColumnIndexOrThrow("id"));
+                item.userId = cursor.getString(cursor.getColumnIndexOrThrow("user_id"));
+
+                inventoryItemsList.add(item);
             }
             cursor.close();
         }

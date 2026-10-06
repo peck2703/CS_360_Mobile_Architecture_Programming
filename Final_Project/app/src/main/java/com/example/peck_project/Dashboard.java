@@ -28,6 +28,20 @@ public class Dashboard extends AppCompatActivity {
         // Bind layout schema
         setContentView(R.layout.activity_dashboard);
 
+        final String activeUserUuid = getIntent().getStringExtra("ACTIVE_USER_UUID");
+        String rawEmail = getIntent().getStringExtra("ACTIVE_USER_EMAIL");
+
+
+        if (rawEmail == null || rawEmail.trim().isEmpty()) {
+            rawEmail = "User";
+        }
+
+        // Split the text at the '@' character and grab the very first piece [0] (the username)
+        final String cleanUsername = rawEmail.split("@")[0];
+
+        //Map layout hooks
+        tvWelcomeUser = findViewById(R.id.toolbar_welcome);
+        tvLowStockBanner = findViewById(R.id.tv_low_stock_banner);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -41,22 +55,15 @@ public class Dashboard extends AppCompatActivity {
         }
 
         // Capture the logged in user identifier context
-        if (getIntent().hasExtra("ACTIVE_USER")) {
-            activeUserEmail = getIntent().getStringExtra("ACTIVE_USER");
-            tvWelcomeUser.setText("Welcome, " + activeUserEmail + "!");
+        if (getIntent().hasExtra("ACTIVE_USER_EMAIL")) {
+            activeUserEmail = getIntent().getStringExtra("ACTIVE_USER_EMAIL");
+            tvWelcomeUser.setText("Welcome, " + cleanUsername + "!");
         }
         else {
             activeUserEmail = "default_user";
         }
 
-        //Map layout hooks
-        tvWelcomeUser = findViewById(R.id.toolbar_welcome);
-        tvLowStockBanner = findViewById(R.id.tv_low_stock_banner);
-
-        if (getIntent().hasExtra("ACTIVE_USER")) {
-            String activeUser = getIntent().getStringExtra("ACTIVE_USER");
-            tvWelcomeUser.setText("Welcome, " + activeUser + "!");
-        }
+        final String activeUserEmail = rawEmail;
 
         //If active location is active
         if(getIntent().hasExtra("LOCATION_NAME")){
@@ -76,7 +83,8 @@ public class Dashboard extends AppCompatActivity {
                 Intent intent = new Intent(Dashboard.this, InventoryViewActivity.class);
                 intent.putExtra("UI_MODE", "VIEWER");
                 intent.putExtra("LOCATION_ID", activeLocationId); // Pass location UUID context string
-                intent.putExtra("ACTIVE_USER", activeUserEmail);   // Pass user tracking context
+                intent.putExtra("ACTIVE_USER_UUID", activeUserUuid);
+                intent.putExtra("ACTIVE_USER_EMAIL", activeUserEmail);
                 startActivity(intent);
             }
         });
@@ -94,15 +102,17 @@ public class Dashboard extends AppCompatActivity {
                                 if (which == 0) {
                                     // Open the add item page
                                     Intent intent = new Intent(Dashboard.this, AddItemActivity.class);
-                                    intent.putExtra("LOCATION_ID", activeLocationId);
-                                    intent.putExtra("ACTIVE_USER", activeUserEmail);
+                                    intent.putExtra("LOCATION_ID", activeLocationId); // Pass location UUID context string
+                                    intent.putExtra("ACTIVE_USER_UUID", activeUserUuid);
+                                    intent.putExtra("ACTIVE_USER_EMAIL", activeUserEmail);
                                     startActivity(intent);
                                 } else if (which == 1) {
                                     // Pulls up view inventory grid flagged for item removal
                                     Intent intent = new Intent(Dashboard.this, InventoryViewActivity.class);
                                     intent.putExtra("UI_MODE", "DELETE_MODE");
-                                    intent.putExtra("LOCATION_ID", activeLocationId);
-                                    intent.putExtra("ACTIVE_USER", activeUserEmail);
+                                    intent.putExtra("LOCATION_ID", activeLocationId); // Pass location UUID context string
+                                    intent.putExtra("ACTIVE_USER_UUID", activeUserUuid);
+                                    intent.putExtra("ACTIVE_USER_EMAIL", activeUserEmail);
                                     startActivity(intent);
                                 }
                             }
@@ -116,8 +126,9 @@ public class Dashboard extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(Dashboard.this, InventoryOrderActivity.class);
-                intent.putExtra("LOCATION_ID", activeLocationId);
-                intent.putExtra("ACTIVE_USER", activeUserEmail);
+                intent.putExtra("LOCATION_ID", activeLocationId); // Pass location UUID context string
+                intent.putExtra("ACTIVE_USER_UUID", activeUserUuid);
+                intent.putExtra("ACTIVE_USER_EMAIL", activeUserEmail);
                 startActivity(intent);
             }
         });
@@ -127,8 +138,9 @@ public class Dashboard extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(Dashboard.this, ReportDiscrepancyActivity.class);
-                intent.putExtra("LOCATION_ID", activeLocationId);
-                intent.putExtra("ACTIVE_USER", activeUserEmail);
+                intent.putExtra("LOCATION_ID", activeLocationId); // Pass location UUID context string
+                intent.putExtra("ACTIVE_USER_UUID", activeUserUuid);
+                intent.putExtra("ACTIVE_USER_EMAIL", activeUserEmail);
                 startActivity(intent);
             }
         });

@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -35,7 +36,20 @@ public class InventoryViewActivity extends AppCompatActivity {
 
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);    // Shows the back arrow graphic
             getSupportActionBar().setDisplayShowHomeEnabled(true);    // Makes it clickable
+
+            String displayEmail = getIntent().getStringExtra("ACTIVE_USER_EMAIL");
+            if (displayEmail == null || displayEmail.trim().isEmpty()) {
+                displayEmail = "User";
+            }
+
+            TextView tvTitle = findViewById(R.id.toolbar_welcome);
+            if (tvTitle != null) {
+                String formattedGreeting = String.format(getString(R.string.dashboard_toolbar_welcome), displayEmail);
+                tvTitle.setText(formattedGreeting);
+            }
         }
+
+        String databaseUserUuid = getIntent().getStringExtra("ACTIVE_USER_UUID");
 
 
         lvInventoryItems = findViewById(R.id.lv_inventory_items);
@@ -65,9 +79,9 @@ public class InventoryViewActivity extends AppCompatActivity {
         loadInventoryItems();
 
         adapter = new InventoryGridAdapter(this, inventoryItemsList, isDeleteModeActive, dbHelper);
-        gvInventoryItems.setAdapter(adapter);
+        lvInventoryItems.setAdapter(adapter);
 
-        gvInventoryItems.setOnItemClickListener(new android.widget.AdapterView.OnItemClickListener() {
+        lvInventoryItems.setOnItemClickListener(new android.widget.AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(android.widget.AdapterView<?> parent, View view, int position, long id) {
                 InventoryItem clickedItem = inventoryItemsList.get(position);
@@ -80,7 +94,7 @@ public class InventoryViewActivity extends AppCompatActivity {
                                 @Override
                                 public void onClick(android.content.DialogInterface dialog, int which) {
                                     // Drop the row out of SQLite database storage
-                                    boolean deleted = dbHelper.deleteItem(clickedItem.getItemNumber());
+                                    boolean deleted = dbHelper.deleteItemGlobally(clickedItem.getItemNumber());
                                     if (deleted) {
                                         Toast.makeText(InventoryViewActivity.this, "Item deleted", Toast.LENGTH_SHORT).show();
                                         inventoryItemsList.remove(position); // Remove from our in-memory list
@@ -138,13 +152,29 @@ public class InventoryViewActivity extends AppCompatActivity {
         if (cursor != null) {
             while (cursor.moveToNext()) {
                 String name = cursor.getString(cursor.getColumnIndexOrThrow("item_name"));
-                String number = cursor.getString(cursor.getColumnIndexOrThrow("item_number"));
+                String number = cursor.getString(cursor.getColumnIndexOrThrow("sku"));
                 int qty = cursor.getInt(cursor.getColumnIndexOrThrow("item_quantity"));
                 String desc = cursor.getString(cursor.getColumnIndexOrThrow("item_description"));
                 //byte[] img = cursor.getBlob(cursor.getColumnIndexOrThrow("item_image"));
 
-                String img = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_INVENTORY_ITEM_IMAGE));
-                if (img == null) img = "";
+                String img = "";
+                try {
+                    int imgIndex = cursor.getColumnIndexOrThrow(DatabaseHelper.COL_INVENTORY_ITEM_IMAGE);
+                    // Safe verification logic check
+                    byte[] imgBytes = cursor.getBlob(imgIndex);
+                    if (imgBytes != null) {
+                        img = new String(imgBytes);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                InventoryItem item = new InventoryItem(name, number, qty, desc, img);
+
+                item.id = cursor.getString(cursor.getColumnIndexOrThrow("id"));
+                item.userId = cursor.getString(cursor.getColumnIndexOrThrow("user_id"));
+
+                inventoryItemsList.add(item);
             }
             cursor.close();
         }

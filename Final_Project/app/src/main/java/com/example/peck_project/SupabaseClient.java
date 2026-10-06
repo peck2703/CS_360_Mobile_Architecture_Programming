@@ -43,7 +43,7 @@ public class SupabaseClient {
         String authHeaderValue = (userAccessToken != null) ? "Bearer " + userAccessToken : "Bearer " + SUPABASE_ANON_KEY;
 
         Request request = new Request.Builder()
-                .url(SUPABASE_URL + tableName)
+                .url(SUPABASE_URL + "/rest/v1/" + tableName)
                 .addHeader("apikey", SUPABASE_ANON_KEY)
                 .addHeader("Authorization", authHeaderValue)
                 .get()
@@ -62,25 +62,38 @@ public class SupabaseClient {
         String authHeaderValue = (userAccessToken != null) ? "Bearer " + userAccessToken : "Bearer " + SUPABASE_ANON_KEY;
         RequestBody body = RequestBody.create(jsonPayload, JSON);
 
+        String fullTargetUrl = SUPABASE_URL + "/rest/v1/" + tableName;
+
         Request request = new Request.Builder()
-                .url(SUPABASE_URL + tableName)
+                .url(fullTargetUrl)
                 .addHeader("apikey", SUPABASE_ANON_KEY)
                 .addHeader("Authorization", authHeaderValue)
-                .addHeader("Prefer", "resolution=merge-duplicates")
+                .addHeader("Prefer", "resolution=merge-duplicates,return=representation")
+                .addHeader("Content-Type", "application/json")
+                .addHeader("Accept", "application/json")
                 .post(body)
                 .build();
 
         try (Response response = httpClient.newCall(request).execute()) {
+            // Enable diagnostic visibility checks natively in the data stream loop
+            android.util.Log.e("SUPABASE_SYNC_DEBUG", "Destination HTTP Endpoint: " + fullTargetUrl);
+            android.util.Log.e("SUPABASE_SYNC_DEBUG", "HTTP Response Code: " + response.code());
+
+            if (response.body() != null) {
+                String errorBodyOutput = response.body().string();
+                android.util.Log.e("SUPABASE_SYNC_DEBUG", "Server Output Error Payload: " + errorBodyOutput);
+            }
+
             return response.isSuccessful();
         }
     }
 
+    /**
+     * Authenticates a user and returns a comma-separated string containing [jwtToken],[userUuid]
+     */
     public String authenticateUser(String email, String password) throws IOException {
-        //Build the target authentication endpoint URL
-        //Strip "rest/v1/" from the baseline setup to target the system auth route
-        String authUrl = SUPABASE_URL.replace("rest/v1/", "auth/v1/token?grant_type=password");
+        String authUrl = SUPABASE_URL + "/auth/v1/token?grant_type=password";
 
-        //Build the JSON request payload
         JsonObject jsonPayload = new JsonObject();
         jsonPayload.addProperty("email", email);
         jsonPayload.addProperty("password", password);
@@ -93,15 +106,26 @@ public class SupabaseClient {
                 .build();
 
         try (Response response = httpClient.newCall(request).execute()) {
-            if (response.isSuccessful() && response.body() != null) {
+            if (response.body() != null) {
                 String responseString = response.body().string();
-                // Parse out the nested access_token string from the response payload
                 JsonObject jsonObject = JsonParser.parseString(responseString).getAsJsonObject();
-                String jwtToken = jsonObject.get("access_token").getAsString();
 
-                // Set the token inside the client instance to clear future RLS headers automatically
-                setUserAccessToken(jwtToken);
-                return jwtToken;
+                if (!response.isSuccessful()) {
+                    return null;
+                }
+
+                // FIXED: Extract the actual 36-character user account UUID from the response body!
+                if (jsonObject.has("access_token") && jsonObject.has("user")) {
+                    String jwtToken = jsonObject.get("access_token").getAsString();
+
+                    JsonObject userObj = jsonObject.getAsJsonObject("user");
+                    String userUuid = userObj.get("id").getAsString();
+
+                    setUserAccessToken(jwtToken);
+
+                    // Return BOTH values packed together cleanly as a split-ready string
+                    return jwtToken + "," + userUuid;
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -109,11 +133,9 @@ public class SupabaseClient {
         return null;
     }
 
-    public boolean registerUserAccount(String email, String password) throws IOException {
-        //Build the signup endpoint target
-        String signupUrl = SUPABASE_URL.replace("rest/v1/", "auth/v1/signup");
+    public boolean registerUserAccount(String email, String password) {
+        String signupUrl = SUPABASE_URL + "/auth/v1/signup";
 
-        //Wrap inputs into the exact structural JSON payload Supabase expects
         JsonObject jsonPayload = new JsonObject();
         jsonPayload.addProperty("email", email);
         jsonPayload.addProperty("password", password);
@@ -126,11 +148,39 @@ public class SupabaseClient {
                 .build();
 
         try (Response response = httpClient.newCall(request).execute()) {
-            // Returns true if the request completes successfully (HTTP status codes 200-299)
-            return response.isSuccessful();
+            android.util.Log.d("SUPABASE_DEBUG", "HTTP Response Code: " + response.code());
+
+            if (response.body() != null) {
+                String responseString = response.body().string();
+                android.util.Log.d("SUPABASE_DEBUG", "Raw JSON Payload: " + responseString);
+
+                JsonObject rootObj = JsonParser.parseString(responseString).getAsJsonObject();
+
+                if (!response.isSuccessful()) {
+                    if (rootObj.has("msg")) {
+                        android.util.Log.e("SUPABASE_DEBUG", "Error message from server: " + rootObj.get("msg").getAsString());
+                    }
+                    return false;
+                }
+
+                if (rootObj.has("user")) {
+                    JsonObject userObj = rootObj.getAsJsonObject("user");
+                    if (userObj.has("identities")) {
+                        com.google.gson.JsonArray identities = userObj.getAsJsonArray("identities");
+                        if (identities.size() == 0) {
+                            android.util.Log.w("SUPABASE_DEBUG", "Caught security mask: Email already exists.");
+                            return false;
+                        }
+                    } else {
+                        return false;
+                    }
+                    return true;
+                }
+            }
         } catch (Exception e) {
+            android.util.Log.e("SUPABASE_DEBUG", "Exception inside signup network request execution!");
             e.printStackTrace();
-            return false;
         }
+        return false;
     }
 }

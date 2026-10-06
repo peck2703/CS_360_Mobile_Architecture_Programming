@@ -5,10 +5,12 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 public class AddItemActivity extends AppCompatActivity {
     private EditText etAddName, etAddNumber, etAddQuantity, etAddCost,
@@ -16,7 +18,7 @@ public class AddItemActivity extends AppCompatActivity {
     private android.widget.Button btnSubmitNewItem;
     private ImageButton btnScanSku;
     private DatabaseHelper dbHelper;
-    private String activeLocationName;
+    private String activeLocationID;
 
     // Register the Result Launcher to handle data coming back from the camera scanner activity
     private ActivityResultLauncher<Intent> scannerLauncher;
@@ -28,10 +30,33 @@ public class AddItemActivity extends AppCompatActivity {
 
         dbHelper = new DatabaseHelper(this);
 
-        if (getIntent().hasExtra("LOCATION_NAME")) {
-            activeLocationName = getIntent().getStringExtra("LOCATION_NAME");
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
+
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);    // Shows the back arrow graphic
+            getSupportActionBar().setDisplayShowHomeEnabled(true);    // Makes it clickable
+
+            String displayEmail = getIntent().getStringExtra("ACTIVE_USER_EMAIL");
+            if (displayEmail == null || displayEmail.trim().isEmpty()) {
+                displayEmail = "User";
+            }
+
+            TextView tvTitle = findViewById(R.id.toolbar_welcome);
+            if (tvTitle != null) {
+                String formattedGreeting = String.format(getString(R.string.dashboard_toolbar_welcome), displayEmail);
+                tvTitle.setText(formattedGreeting);
+            }
+        }
+
+        String databaseUserUuid = getIntent().getStringExtra("ACTIVE_USER_UUID");
+
+        if (getIntent().hasExtra("LOCATION_ID")) {
+            activeLocationID = getIntent().getStringExtra("LOCATION_ID");
         } else {
-            activeLocationName = "Default Location"; // Safe fallback
+            activeLocationID = "00000000-0000-0000-0000-000000000000"; // Safe empty UUID structure fallback
         }
 
         etAddName = findViewById(R.id.et_add_name);
@@ -118,17 +143,27 @@ public class AddItemActivity extends AppCompatActivity {
                         retail,              // 8. retail_price (Uses user input value)
                         reorderPoint,        // 9. reorder_point (Uses user input value)
                         emptyImageBlob,      // 10. item_image (BLOB payload metadata)
-                        activeLocationName     // 11. location_id (Foreign Key mapping link string)
+                        activeLocationID     // 11. location_id (Foreign Key mapping link string)
                 );
 
                 if (isInserted) {
-                    //Upload the changes to the cloud
-                    SyncManager syncManager = new SyncManager(AddItemActivity.this);
-                    syncManager.uploadLocalChangesToCloud();
+                    // FIXED: Move the web network push cleanly into a background thread execution gate
+                    new Thread(() -> {
+                        try {
+                            SyncManager syncManager = new SyncManager(AddItemActivity.this);
+                            syncManager.uploadLocalChangesToCloud();
 
-                    Toast.makeText(AddItemActivity.this, "Item added successfully!", Toast.LENGTH_SHORT).show();
-                    finish();
-                } else {
+                            // Show successful completion feedback on the main visual screen layout
+                            runOnUiThread(() -> {
+                                Toast.makeText(AddItemActivity.this, "Item added locally and queued for cloud sync!", Toast.LENGTH_SHORT).show();
+                                finish();
+                            });
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }).start();
+                }
+                else {
                     etAddNumber.setError("This item number already exists!");
                     Toast.makeText(AddItemActivity.this, "Failed to add item.", Toast.LENGTH_SHORT).show();
                 }
