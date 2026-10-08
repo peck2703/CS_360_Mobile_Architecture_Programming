@@ -82,7 +82,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_AUDITS_NOTES = "audits_notes";
     private static final String COL_AUDITS_CREATED_AT = "audits_created";
     private static final String COL_AUDITS_RESOLVED_AT = "audits_resolved_at";
-    private static final String COL_AUDITS_DISCREPANCY = "audits_discrepancy";
 
     // Cache Management Meta-Columns
     private static final String COL_IS_DIRTY = "is_dirty";         // 1 if updated offline, 0 if synced
@@ -174,7 +173,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COL_AUDITS_NOTES + " TEXT, " +
                 COL_AUDITS_CREATED_AT + " TEXT, " +
                 COL_AUDITS_RESOLVED_AT + " TEXT, " +
-                COL_AUDITS_DISCREPANCY + " INTEGER, " + // Auto-calculated int8 math field from server
                 "is_dirty INTEGER DEFAULT 0)"; // Cache synchronization flag
         db.execSQL(createAuditsTable);
     }
@@ -289,13 +287,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     // INVENTORY OPERATIONS
 
-    @SuppressLint("Range")
     public ArrayList<InventoryItemModel> getInventoryByLocation(String locationId) {
         ArrayList<InventoryItemModel> itemList = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
 
-        // Select core item details and specific quantities tied to this location ID mapping
-        String query = "SELECT i." + COL_INVENTORY_ITEM_ID + ", i." + COL_INVENTORY_ITEM_NAME + ", i." + COL_INVENTORY_SKU + ", il." + COL_INV_LOC_QUANTITY
+        // FIXED: Changed il.COL_INV_LOC_QUANTITY to i.COL_INVENTORY_ITEM_QTY
+        String query = "SELECT i." + COL_INVENTORY_ITEM_ID + ", i." + COL_INVENTORY_ITEM_NAME + ", i." + COL_INVENTORY_SKU + ", i." + COL_INVENTORY_ITEM_QTY
                 + " FROM " + TABLE_INVENTORY + " i "
                 + " INNER JOIN " + TABLE_INVENTORY_LOCATIONS + " il "
                 + " ON i." + COL_INVENTORY_ITEM_ID + " = il." + COL_INV_LOC_INV_ID
@@ -304,13 +301,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         Cursor cursor = db.rawQuery(query, new String[]{locationId});
 
         if (cursor != null) {
+            int idIdx = cursor.getColumnIndex(COL_INVENTORY_ITEM_ID);
+            int nameIdx = cursor.getColumnIndex(COL_INVENTORY_ITEM_NAME);
+            int skuIdx = cursor.getColumnIndex(COL_INVENTORY_SKU);
+            int qtyIdx = cursor.getColumnIndex(COL_INVENTORY_ITEM_QTY); // Read out of core item table index
+
             while (cursor.moveToNext()) {
-                InventoryItemModel item = new InventoryItemModel(
-                        cursor.getString(cursor.getColumnIndex(COL_INVENTORY_ITEM_ID)),
-                        cursor.getString(cursor.getColumnIndex(COL_INVENTORY_ITEM_NAME)),
-                        cursor.getString(cursor.getColumnIndex(COL_INVENTORY_SKU)),
-                        cursor.getInt(cursor.getColumnIndex(COL_INV_LOC_QUANTITY))
-                );
+                String resolvedId = (idIdx != -1) ? cursor.getString(idIdx) : "";
+                String resolvedName = (nameIdx != -1) ? cursor.getString(nameIdx) : "Unknown";
+                String resolvedSku = (skuIdx != -1) ? cursor.getString(skuIdx) : "";
+                int resolvedQty = (qtyIdx != -1) ? cursor.getInt(qtyIdx) : 0;
+
+                InventoryItemModel item = new InventoryItemModel(resolvedId, resolvedName, resolvedSku, resolvedQty);
+                item.setLocationId(locationId);
                 itemList.add(item);
             }
             cursor.close();
@@ -318,6 +321,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
         return itemList;
     }
+
     public boolean addItem(String itemId, String userId, String sku, String name,
                            String description, int quantity, double cost, double retail,
                            int reorderPoint, byte[] imageBytes, String locationId) {
@@ -409,35 +413,38 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public boolean insertAuditLog(AuditModel audit) {
         SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
+        ContentValues cv = new ContentValues();
 
-        // Auto-calculate structural discrepancy mismatch math logic locally
-        int variance = audit.getAuditsActual() - audit.getAuditsExpected();
+        // Map all properties to your exact table column constants
+        cv.put(COL_AUDITS_ID, audit.getAuditsId());
+        cv.put(COL_AUDITS_USER_ID, audit.getUserId());
+        cv.put(COL_AUDITS_INV_ID, audit.getAuditsInvId());
+        cv.put(COL_AUDITS_LOC_ID, audit.getAuditsLocId());
+        cv.put(COL_AUDITS_EXP_QTY, audit.getAuditsExpected());
+        cv.put(COL_AUDITS_ACT_QTY, audit.getAuditsActual());
+        cv.put(COL_AUDITS_STATUS, audit.getAuditsStatus());
+        cv.put(COL_AUDITS_NOTES, audit.getAuditsNotes());
+        cv.put(COL_AUDITS_CREATED_AT, audit.getAuditsCreated());
+        cv.put(COL_AUDITS_RESOLVED_AT, audit.getAuditsResolvedAt());
 
-        values.put(COL_AUDITS_ID, audit.getAuditsId());
-        values.put(COL_AUDITS_USER_ID, audit.getUserId());
-        values.put(COL_AUDITS_INV_ID, audit.getAuditsInvId());
-        values.put(COL_AUDITS_LOC_ID, audit.getAuditsLocId());
-        values.put(COL_AUDITS_EXP_QTY, audit.getAuditsExpected());
-        values.put(COL_AUDITS_ACT_QTY, audit.getAuditsActual());
-        values.put(COL_AUDITS_STATUS, audit.getAuditsStatus());
-        values.put(COL_AUDITS_NOTES, audit.getAuditsNotes());
-        values.put(COL_AUDITS_CREATED_AT, audit.getAuditsCreated());
-        values.put(COL_AUDITS_RESOLVED_AT, audit.getAuditsResolvedAt());
-        values.put(COL_AUDITS_DISCREPANCY, variance); // Saved calculation value
-        values.put("is_dirty", 1); // Mark 1 so SyncManager pushes this update to Supabase
+        // CACHE SYNC FLAG: Set to 1 so the app knows this record needs to sync to Supabase
+        cv.put("is_dirty", 1);
 
-        long result = db.insert(TABLE_AUDITS, null, values);
+        // Insert into your defined table constant
+        long result = db.insert(TABLE_AUDITS, null, cv);
         db.close();
-        return result != -1;
+
+        return result != -1; // Returns true if insertion succeeds
     }
 
-    @SuppressLint("Range")
-    public InventoryItemModel getItemBySkuAndLocation(String sku, String locationId) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        InventoryItemModel item = null;
 
-        String query = "SELECT i." + COL_INVENTORY_ITEM_ID + ", i." + COL_INVENTORY_ITEM_NAME + ", i." + COL_INVENTORY_SKU + ", il." + COL_INV_LOC_QUANTITY
+
+    public InventoryItemModel getItemBySkuAndLocation(String sku, String locationId) {
+        InventoryItemModel item = null;
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        // Changed il.COL_INV_LOC_QUANTITY to i.COL_INVENTORY_ITEM_QTY
+        String query = "SELECT i." + COL_INVENTORY_ITEM_ID + ", i." + COL_INVENTORY_ITEM_NAME + ", i." + COL_INVENTORY_SKU + ", i." + COL_INVENTORY_ITEM_QTY
                 + " FROM " + TABLE_INVENTORY + " i "
                 + " INNER JOIN " + TABLE_INVENTORY_LOCATIONS + " il "
                 + " ON i." + COL_INVENTORY_ITEM_ID + " = il." + COL_INV_LOC_INV_ID
@@ -447,12 +454,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         if (cursor != null) {
             if (cursor.moveToFirst()) {
-                item = new InventoryItemModel(
-                        cursor.getString(cursor.getColumnIndex(COL_INVENTORY_ITEM_ID)),
-                        cursor.getString(cursor.getColumnIndex(COL_INVENTORY_ITEM_NAME)),
-                        cursor.getString(cursor.getColumnIndex(COL_INVENTORY_SKU)),
-                        cursor.getInt(cursor.getColumnIndex(COL_INV_LOC_QUANTITY))
-                );
+                int idIdx = cursor.getColumnIndex(COL_INVENTORY_ITEM_ID);
+                int nameIdx = cursor.getColumnIndex(COL_INVENTORY_ITEM_NAME);
+                int skuIdx = cursor.getColumnIndex(COL_INVENTORY_SKU);
+                int qtyIdx = cursor.getColumnIndex(COL_INVENTORY_ITEM_QTY);
+
+                if (idIdx != -1 && nameIdx != -1 && skuIdx != -1 && qtyIdx != -1) {
+                    item = new InventoryItemModel(
+                            cursor.getString(idIdx),
+                            cursor.getString(nameIdx),
+                            cursor.getString(skuIdx),
+                            cursor.getInt(qtyIdx)
+                    );
+                    item.setLocationId(locationId);
+                }
             }
             cursor.close();
         }
@@ -460,35 +475,55 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return item;
     }
 
+
     public void upsertInventoryFromCloud(InventoryItem item) {
         SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
 
-        values.put(COL_INVENTORY_ITEM_ID, item.id);
-        values.put(COL_INVENTORY_USER_ID, item.userId);
-        values.put(COL_INVENTORY_SKU, item.getItemNumber());
-        values.put(COL_INVENTORY_ITEM_NAME, item.getName());
-        values.put(COL_INVENTORY_ITEM_DESC, item.getDescription());
-        values.put(COL_INVENTORY_ITEM_QTY, item.getQuantity());
-        values.put(COL_INVENTORY_COST_PRICE, item.costPrice);
-        values.put(COL_INVENTORY_RETAIL_PRICE, item.retailPrice);
-        values.put(COL_INVENTORY_REORDER_POINT, item.reorderPoint);
+        // Core Inventory Table Update Payload
+        ContentValues inventoryValues = new ContentValues();
+        inventoryValues.put(COL_INVENTORY_ITEM_ID, item.id);
+        inventoryValues.put(COL_INVENTORY_USER_ID, item.userId);
+        inventoryValues.put(COL_INVENTORY_ITEM_NAME, item.getName());
+        inventoryValues.put(COL_INVENTORY_SKU, item.getItemNumber());
+        inventoryValues.put(COL_INVENTORY_CREATED_AT, item.createdAt);
+        inventoryValues.put(COL_INVENTORY_UPDATED_AT, item.updatedAt);
+        inventoryValues.put(COL_INVENTORY_COST_PRICE, item.costPrice);
+        inventoryValues.put(COL_INVENTORY_RETAIL_PRICE, item.retailPrice);
+        inventoryValues.put(COL_INVENTORY_REORDER_POINT, item.reorderPoint);
+        inventoryValues.put(COL_INVENTORY_ITEM_IMAGE, item.getItemImage());
+        inventoryValues.put(COL_INVENTORY_ITEM_QTY, item.getQuantity());
 
-        // Convert the incoming cloud image string into a safe binary byte array layout block
-        String cloudImgStr = item.getItemImage();
-        byte[] finalImageBlob = (cloudImgStr == null) ? new byte[0] : cloudImgStr.getBytes();
-        values.put(COL_INVENTORY_ITEM_IMAGE, finalImageBlob);
+        // Perform an upsert (Insert or Replace) into the inventory descriptor table
+        db.insertWithOnConflict(TABLE_INVENTORY, null, inventoryValues, SQLiteDatabase.CONFLICT_REPLACE);
 
-        values.put(COL_INVENTORY_CREATED_AT, item.createdAt);
-        values.put(COL_INVENTORY_UPDATED_AT, item.updatedAt);
+        // Cross-Reference Location Table Update Payload
+        ContentValues locationMappingValues = new ContentValues();
+        locationMappingValues.put(COL_INV_LOC_INV_ID, item.id);              // The dynamic Item UUID
+        locationMappingValues.put(COL_INV_LOC_LOC_ID, item.getLocationId());  // The dynamic Location UUID!
+        locationMappingValues.put(COL_INV_LOC_QUANTITY, item.getQuantity());
 
-        // Cloud states are already successfully written to the server, so mark clean locally
-        values.put(COL_IS_DIRTY, 0);
+        // Perform an upsert into your relational facility location index cross-reference table
+        db.insertWithOnConflict(TABLE_INVENTORY_LOCATIONS, null, locationMappingValues, SQLiteDatabase.CONFLICT_REPLACE);
 
-        // Using CONFLICT_REPLACE ensures it overwrites matching primary IDs instead of throwing an index crash
-        db.replace("inventory", null, values);
+        db.close();
+        Log.d("DatabaseHelper", "Successfully upserted item: " + item.getName() + " for Location: " + item.getLocationId());
     }
 
+    public String getLocationIdByInventoryId(String inventoryId) {
+        String foundLocationId = null;
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        // Assumes your table/column layout references match your existing cross-reference sync layouts
+        Cursor cursor = db.rawQuery("SELECT location_id FROM Inventory_Locations WHERE inventory_id = ?", new String[]{inventoryId});
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                foundLocationId = cursor.getString(0);
+            }
+            cursor.close();
+        }
+        db.close();
+        return foundLocationId;
+    }
 
     public int getLowStockCount(String locationId, int defaultThreshold) {
         SQLiteDatabase db = this.getReadableDatabase();

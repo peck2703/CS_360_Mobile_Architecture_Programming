@@ -15,6 +15,7 @@ public class InventoryItem {
     @SerializedName("item_image") public String itemImage; // Cloud uses a URL string to your bucket
     @SerializedName("created_at") public String createdAt;
     @SerializedName("updated_at") public String updatedAt;
+    @SerializedName("location_id") public String locationId;
 
     // Default constructor required by Gson for JSON parsing
     public InventoryItem() {}
@@ -34,6 +35,7 @@ public class InventoryItem {
     public int getQuantity() { return itemQuantity; }
     public String getDescription() { return itemDescription; }
     public String getItemImage() { return itemImage; }
+    public String getLocationId() { return locationId; }
 
     /**
      * Serializes the active item into a clean JSON string matching your Supabase columns.

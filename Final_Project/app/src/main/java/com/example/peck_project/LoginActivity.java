@@ -58,13 +58,25 @@ public class LoginActivity extends AppCompatActivity {
 
                         runOnUiThread(() -> {
                             if (authResult != null) {
-                                // FIXED: Split the combined response token data strings cleanly
+                                // Split the combined response token data strings cleanly
                                 String[] authData = authResult.split(",");
                                 String jwtToken = authData[0];
                                 String realUserUuid = authData[1]; // Extracts the secure 36-character cloud UUID string!
 
                                 SyncManager syncManager = new SyncManager(LoginActivity.this);
                                 syncManager.downloadInventoryFromCloud();
+
+                                //Load the location ID
+                                LocationModel userLocation = dbHelper.getLocationByUserId(realUserUuid);
+                                String locationUuid = (userLocation != null) ? userLocation.getId() : null;
+
+                                //Cache the User UUID for later
+                                android.content.SharedPreferences prefs = getSharedPreferences("PeckProjectPrefs", MODE_PRIVATE);
+                                android.content.SharedPreferences.Editor editor = prefs.edit();
+                                editor.putString("LOGGED_IN_USER_UUID", realUserUuid);
+                                editor.putString("LOGGED_IN_USER_EMAIL", username);
+                                editor.putString("LOGGED_IN_USER_LOCATION_ID", locationUuid);
+                                editor.apply();
 
                                 Intent intent = new Intent(LoginActivity.this, Dashboard.class);
 
@@ -73,6 +85,9 @@ public class LoginActivity extends AppCompatActivity {
 
                                 // Pass the readable text email address string separately for the visual toolbar greeting!
                                 intent.putExtra("ACTIVE_USER_EMAIL", username);
+
+                                //Pass the current location
+                                intent.putExtra("LOCATION_ID", locationUuid);
 
                                 startActivity(intent);
                                 finish();
@@ -90,7 +105,6 @@ public class LoginActivity extends AppCompatActivity {
                 }).start();
             }
         });
-
 
         //Create account button
         btnCreate.setOnClickListener(new View.OnClickListener() {

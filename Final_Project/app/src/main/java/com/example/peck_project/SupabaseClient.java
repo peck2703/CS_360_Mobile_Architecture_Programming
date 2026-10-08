@@ -68,11 +68,12 @@ public class SupabaseClient {
                 .url(fullTargetUrl)
                 .addHeader("apikey", SUPABASE_ANON_KEY)
                 .addHeader("Authorization", authHeaderValue)
-                .addHeader("Prefer", "resolution=merge-duplicates,return=representation")
+                .addHeader("Prefer", "return=representation")
                 .addHeader("Content-Type", "application/json")
                 .addHeader("Accept", "application/json")
                 .post(body)
                 .build();
+
 
         try (Response response = httpClient.newCall(request).execute()) {
             // Enable diagnostic visibility checks natively in the data stream loop
@@ -133,54 +134,58 @@ public class SupabaseClient {
         return null;
     }
 
-    public boolean registerUserAccount(String email, String password) {
-        String signupUrl = SUPABASE_URL + "/auth/v1/signup";
+    public String registerUserAccount(String email, String password) {
+        try {
+            okhttp3.OkHttpClient client = new okhttp3.OkHttpClient();
 
-        JsonObject jsonPayload = new JsonObject();
-        jsonPayload.addProperty("email", email);
-        jsonPayload.addProperty("password", password);
+            com.google.gson.JsonObject jsonPayload = new com.google.gson.JsonObject();
+            jsonPayload.addProperty("email", email);
+            jsonPayload.addProperty("password", password);
 
-        RequestBody body = RequestBody.create(jsonPayload.toString(), JSON);
-        Request request = new Request.Builder()
-                .url(signupUrl)
-                .addHeader("apikey", SUPABASE_ANON_KEY)
-                .post(body)
-                .build();
+            okhttp3.RequestBody body = okhttp3.RequestBody.create(
+                    jsonPayload.toString(),
+                    okhttp3.MediaType.parse("application/json; charset=utf-8")
+            );
 
-        try (Response response = httpClient.newCall(request).execute()) {
-            android.util.Log.d("SUPABASE_DEBUG", "HTTP Response Code: " + response.code());
+            String targetUrl = SUPABASE_URL + "/auth/v1/signup";
 
-            if (response.body() != null) {
-                String responseString = response.body().string();
-                android.util.Log.d("SUPABASE_DEBUG", "Raw JSON Payload: " + responseString);
+            okhttp3.Request request = new okhttp3.Request.Builder()
+                    .url(targetUrl)
+                    .post(body)
+                    .addHeader("apikey", SUPABASE_ANON_KEY)
+                    .addHeader("Content-Type", "application/json")
+                    .build();
 
-                JsonObject rootObj = JsonParser.parseString(responseString).getAsJsonObject();
+            try (okhttp3.Response response = client.newCall(request).execute()) {
+                // DIAGNOSTIC CORE: Log the network status immediately
+                android.util.Log.e("REGISTRATION_GATE", "Supabase SignUp HTTP Status Code: " + response.code());
 
-                if (!response.isSuccessful()) {
-                    if (rootObj.has("msg")) {
-                        android.util.Log.e("SUPABASE_DEBUG", "Error message from server: " + rootObj.get("msg").getAsString());
-                    }
-                    return false;
-                }
+                if (response.body() != null) {
+                    String responseBody = response.body().string();
+                    android.util.Log.e("REGISTRATION_GATE", "Supabase SignUp Raw Body Payload: " + responseBody);
 
-                if (rootObj.has("user")) {
-                    JsonObject userObj = rootObj.getAsJsonObject("user");
-                    if (userObj.has("identities")) {
-                        com.google.gson.JsonArray identities = userObj.getAsJsonArray("identities");
-                        if (identities.size() == 0) {
-                            android.util.Log.w("SUPABASE_DEBUG", "Caught security mask: Email already exists.");
-                            return false;
+                    if (response.isSuccessful()) {
+                        com.google.gson.JsonObject obj = com.google.gson.JsonParser.parseString(responseBody).getAsJsonObject();
+
+                        if (obj.has("user") && !obj.get("user").isJsonNull()) {
+                            com.google.gson.JsonObject userObj = obj.getAsJsonObject("user");
+                            if (userObj.has("id")) {
+                                return userObj.get("id").getAsString();
+                            }
                         }
-                    } else {
-                        return false;
+                        if (obj.has("id")) {
+                            return obj.get("id").getAsString();
+                        }
                     }
-                    return true;
+
                 }
+                return null;
             }
         } catch (Exception e) {
-            android.util.Log.e("SUPABASE_DEBUG", "Exception inside signup network request execution!");
-            e.printStackTrace();
+            // !!! CRITICAL DIAGNOSTIC: Force Logcat to print the exact crash line number and message !!!
+            android.util.Log.e("REGISTRATION_GATE", "CRITICAL NETWORK THREAD EXCEPTION DISCOVERED:", e);
+            return null;
         }
-        return false;
     }
+
 }

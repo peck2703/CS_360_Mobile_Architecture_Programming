@@ -1,10 +1,11 @@
 package com.example.peck_project;
 
 public class InventoryItemModel {
-    private String id;
-    private String name;
-    private String sku;
-    private int quantity;
+    final private String id;
+    final private String name;
+    final private String sku;
+    final private int quantity;
+    private String locationId;
 
     // Constructor to instantiate the model from database query results
     public InventoryItemModel(String id, String name, String sku, int quantity) {
@@ -19,4 +20,6 @@ public class InventoryItemModel {
     public String getName() { return name; }
     public String getSku() { return sku; }
     public int getQuantity() { return quantity; }
+    public String getLocationId() { return locationId; }
+    public void setLocationId(String locationId) { this.locationId = locationId; }
 }

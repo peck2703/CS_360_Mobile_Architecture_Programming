@@ -93,32 +93,29 @@ public class RegisterActivity extends AppCompatActivity {
                 new Thread(() -> {
                     try {
                         SupabaseClient client = SupabaseClient.getInstance();
-                        boolean isCloudSuccess = client.registerUserAccount(email, pass);
+                        String secureCloudUserUuid = client.registerUserAccount(email, pass);
 
                         runOnUiThread(() -> {
-                            if (isCloudSuccess) {
-                                // Generate a clean, guaranteed unique 36-character UUID string locally
-                                String localUserUuid = java.util.UUID.randomUUID().toString();
+                            if (secureCloudUserUuid != null && !secureCloudUserUuid.trim().isEmpty()) {
 
-                                // Pass all 3 parameters matching your DatabaseHelper signature requirements exactly
-                                dbHelper.registerUser(localUserUuid, email, pass);
+                                // Save the actual cloud UUID into the local SQLite users index!
+                                dbHelper.registerUser(secureCloudUserUuid, email, pass);
 
-                                //Set up the location model
+                                // Set up the location model using the matching cloud user token
                                 LocationModel userLocation = new LocationModel();
-                                userLocation.setId(java.util.UUID.randomUUID().toString());
-                                userLocation.setUserId(localUserUuid);
+                                userLocation.setId(java.util.UUID.randomUUID().toString()); // Location unique ID can stay random local text
+                                userLocation.setUserId(secureCloudUserUuid);              // Bound directly to the true Cloud User UUID!
                                 userLocation.setLocationName(finalLocationName);
                                 userLocation.setSubLocation("");
 
-                                //Set the current timestamp
                                 String currentTimeStamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
                                 userLocation.setCreatedAt(currentTimeStamp);
 
-                                //Save the location data
+                                // Save the location details locally in SQLite
                                 dbHelper.addLocation(userLocation);
 
                                 Toast.makeText(RegisterActivity.this, "Registration Successful! Check email for verification link.", Toast.LENGTH_LONG).show();
-                                finish(); // Route user backward to LoginActivity cleanly
+                                finish(); // Route user backward cleanly
                             } else {
                                 etEmail.setError("This email address is invalid or already registered.");
                                 Toast.makeText(RegisterActivity.this, "Registration failed.", Toast.LENGTH_SHORT).show();
@@ -126,7 +123,7 @@ public class RegisterActivity extends AppCompatActivity {
                         });
 
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        android.util.Log.e("REGISTRATION_GATE", "CRITICAL ACTIVITY SCREEN RUNTIME EXCEPTION:", e);
                         runOnUiThread(() ->
                                 Toast.makeText(RegisterActivity.this, "Network timeout. Try again.", Toast.LENGTH_SHORT).show()
                         );
